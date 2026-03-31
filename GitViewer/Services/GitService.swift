@@ -26,55 +26,59 @@ actor GitService {
     // MARK: - Core runner
 
     func run(_ arguments: [String]) async throws -> String {
-        try await withCheckedThrowingContinuation { continuation in
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: gitPath)
-            process.arguments = arguments
-            process.currentDirectoryURL = repositoryURL
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: gitPath)
+        process.arguments = arguments
+        process.currentDirectoryURL = repositoryURL
 
-            let stdoutPipe = Pipe()
-            let stderrPipe = Pipe()
-            process.standardOutput = stdoutPipe
-            process.standardError = stderrPipe
+        let stdoutPipe = Pipe()
+        let stderrPipe = Pipe()
+        process.standardOutput = stdoutPipe
+        process.standardError = stderrPipe
 
-            do {
-                try process.run()
-            } catch {
-                continuation.resume(throwing: error)
-                return
-            }
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                do {
+                    try process.run()
+                } catch {
+                    continuation.resume(throwing: error)
+                    return
+                }
 
-            // Read stdout and stderr concurrently to prevent pipe buffer deadlock on large output.
-            // readDataToEndOfFile() blocks until the write end closes (process exit), so both
-            // reads must run in parallel; otherwise the process blocks on a full pipe.
-            let group = DispatchGroup()
-            let queue = DispatchQueue.global(qos: .userInitiated)
-            var stdoutData = Data()
-            var stderrData = Data()
+                // Read stdout and stderr concurrently to prevent pipe buffer deadlock on large output.
+                // readDataToEndOfFile() blocks until the write end closes (process exit), so both
+                // reads must run in parallel; otherwise the process blocks on a full pipe.
+                let group = DispatchGroup()
+                let queue = DispatchQueue.global(qos: .userInitiated)
+                var stdoutData = Data()
+                var stderrData = Data()
 
-            group.enter()
-            queue.async {
-                stdoutData = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
-                group.leave()
-            }
+                group.enter()
+                queue.async {
+                    stdoutData = stdoutPipe.fileHandleForReading.readDataToEndOfFile()
+                    group.leave()
+                }
 
-            group.enter()
-            queue.async {
-                stderrData = stderrPipe.fileHandleForReading.readDataToEndOfFile()
-                group.leave()
-            }
+                group.enter()
+                queue.async {
+                    stderrData = stderrPipe.fileHandleForReading.readDataToEndOfFile()
+                    group.leave()
+                }
 
-            group.notify(queue: queue) {
-                process.waitUntilExit()
-                let output = String(data: stdoutData, encoding: .utf8) ?? ""
-                let stderr = String(data: stderrData, encoding: .utf8) ?? ""
+                group.notify(queue: queue) {
+                    process.waitUntilExit()
+                    let output = String(data: stdoutData, encoding: .utf8) ?? ""
+                    let stderr = String(data: stderrData, encoding: .utf8) ?? ""
 
-                if process.terminationStatus == 0 {
-                    continuation.resume(returning: output)
-                } else {
-                    continuation.resume(throwing: GitError.commandFailed(stderr.isEmpty ? output : stderr))
+                    if process.terminationStatus == 0 {
+                        continuation.resume(returning: output)
+                    } else {
+                        continuation.resume(throwing: GitError.commandFailed(stderr.isEmpty ? output : stderr))
+                    }
                 }
             }
+        } onCancel: {
+            process.terminate()
         }
     }
 
@@ -175,7 +179,7 @@ actor GitService {
     // MARK: - Log
 
     func fetchLog(ref: String = "HEAD", limit: Int = 200, offset: Int = 0) async throws -> String {
-        let format = "%H%x00%P%x00%an%x00%ae%x00%ai%x00%cn%x00%ci%x00%s%x00%B%x00---COMMIT_END---"
+        let format = "%H%x00%P%x00%an%x00%ae%x00%ai%x00%cn%x00%ci%x00%s%x00%b%x00%D%x00---COMMIT_END---"
         return try await run([
             "log", ref,
             "--format=\(format)",
@@ -185,7 +189,7 @@ actor GitService {
     }
 
     func fetchAllLog(limit: Int = 1000) async throws -> String {
-        let format = "%H%x00%P%x00%an%x00%ae%x00%ai%x00%cn%x00%ci%x00%s%x00%B%x00---COMMIT_END---"
+        let format = "%H%x00%P%x00%an%x00%ae%x00%ai%x00%cn%x00%ci%x00%s%x00%b%x00%D%x00---COMMIT_END---"
         return try await run([
             "log", "--all",
             "--format=\(format)",

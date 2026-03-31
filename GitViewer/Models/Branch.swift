@@ -24,4 +24,18 @@ struct GitRef: Identifiable, Hashable {
         self.refType = refType
         self.isHead = isHead
     }
+
+    // Ref string suitable for passing to git log
+    var gitRef: String {
+        switch refType {
+        case .localBranch:
+            return shortName
+        case .remoteBranch(let remote):
+            return "\(remote)/\(shortName)"
+        case .tag:
+            return shortName
+        case .stash:
+            return name  // "stash@{0}"
+        }
+    }
 }

@@ -7,6 +7,8 @@ final class AppViewModel {
     var repositories: [Repository] = []
     var selectedRepository: Repository?
     var sidebarVM: SidebarViewModel?
+    var commitListVM: CommitListViewModel?
+    private(set) var gitService: GitService?
     private var loadTask: Task<Void, Never>?
 
     init() {
@@ -39,18 +41,22 @@ final class AppViewModel {
             } else {
                 selectedRepository = nil
                 sidebarVM = nil
+                commitListVM = nil
+                gitService = nil
             }
         }
     }
 
     func selectRepository(_ repo: Repository) {
         selectedRepository = repo
-        let vm = SidebarViewModel()
-        sidebarVM = vm
         let service = GitService(repositoryURL: repo.path)
+        gitService = service
+        let sidebar = SidebarViewModel()
+        sidebarVM = sidebar
+        commitListVM = CommitListViewModel()
         loadTask?.cancel()
         loadTask = Task {
-            await vm.load(service: service)
+            await sidebar.load(service: service)
         }
     }
 }
