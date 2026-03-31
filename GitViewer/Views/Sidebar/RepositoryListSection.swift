@@ -1,8 +1,18 @@
 import SwiftUI
 
-// Phase 2: Repository list section in sidebar
 struct RepositoryListSection: View {
+    @Environment(AppViewModel.self) private var appViewModel
+
     var body: some View {
-        EmptyView()
+        Section("REPOSITORIES") {
+            ForEach(appViewModel.repositories) { repo in
+                RepositoryCell(repository: repo,
+                               isSelected: appViewModel.selectedRepository?.id == repo.id)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        appViewModel.selectRepository(repo)
+                    }
+            }
+        }
     }
 }

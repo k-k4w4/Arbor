@@ -137,7 +137,7 @@ actor GitService {
                 }
 
                 return GitRef(
-                    name: shortName,
+                    name: fullRefname,
                     shortName: shortName.components(separatedBy: "/").last ?? shortName,
                     sha: sha,
                     refType: refType,

@@ -1,10 +1,12 @@
 import SwiftUI
 
-// Phase 2: Repository cell in sidebar
 struct RepositoryCell: View {
     let repository: Repository
+    let isSelected: Bool
 
     var body: some View {
-        EmptyView()
+        Label(repository.name, systemImage: "folder")
+            .lineLimit(1)
+            .listRowBackground(isSelected ? Color.accentColor.opacity(0.15) : Color.clear)
     }
 }
