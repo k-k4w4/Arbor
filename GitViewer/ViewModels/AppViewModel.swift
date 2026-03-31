@@ -8,6 +8,7 @@ final class AppViewModel {
     var selectedRepository: Repository?
     var sidebarVM: SidebarViewModel?
     var commitListVM: CommitListViewModel?
+    var detailVM: DetailViewModel?
     private(set) var gitService: GitService?
     private var loadTask: Task<Void, Never>?
 
@@ -42,6 +43,7 @@ final class AppViewModel {
                 selectedRepository = nil
                 sidebarVM = nil
                 commitListVM = nil
+                detailVM = nil
                 gitService = nil
             }
         }
@@ -54,6 +56,7 @@ final class AppViewModel {
         let sidebar = SidebarViewModel()
         sidebarVM = sidebar
         commitListVM = CommitListViewModel()
+        detailVM = DetailViewModel()
         loadTask?.cancel()
         loadTask = Task {
             await sidebar.load(service: service)

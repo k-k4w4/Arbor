@@ -9,7 +9,7 @@ enum FileStatus: String, Hashable {
 }
 
 struct DiffFile: Identifiable {
-    let id: UUID
+    let id: String  // newPath as stable identifier
     var status: FileStatus
     var oldPath: String?
     var newPath: String
@@ -17,7 +17,7 @@ struct DiffFile: Identifiable {
     var isBinary: Bool
 
     init(status: FileStatus, oldPath: String? = nil, newPath: String, isBinary: Bool = false) {
-        self.id = UUID()
+        self.id = newPath
         self.status = status
         self.oldPath = oldPath
         self.newPath = newPath

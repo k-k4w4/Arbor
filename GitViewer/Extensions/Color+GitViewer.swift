@@ -10,6 +10,11 @@ extension Color {
     static let gitViewerModified = Color.blue
     static let gitViewerRenamed = Color.orange
 
+    // Diff background colors
+    static let diffAdded = Color.green.opacity(0.15)
+    static let diffDeleted = Color.red.opacity(0.12)
+    static let diffHunk = Color.accentColor.opacity(0.07)
+
     // Branch graph color palette (10 colors, cycling by lane index)
     static let graphPalette: [Color] = [
         Color(hex: 0x4B9EFF),
