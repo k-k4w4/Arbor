@@ -12,9 +12,21 @@ final class SidebarViewModel {
     var isLoading: Bool = false
     var errorMessage: String?
 
-    func load(service: GitService) async {
+    private var loadTask: Task<Void, Never>?
+
+    func cancelAll() {
+        loadTask?.cancel()
+    }
+
+    func scheduleLoad(service: GitService) {
+        loadTask?.cancel()
+        loadTask = Task { await self.load(service: service) }
+    }
+
+    private func load(service: GitService) async {
         isLoading = true
         errorMessage = nil
+        defer { isLoading = false }
         do {
             async let refsTask = service.listBranches()
             async let stashTask = service.listStashes()
@@ -38,10 +50,9 @@ final class SidebarViewModel {
                 selectedRef = localBranches.first { $0.isHead } ?? localBranches.first
             }
         } catch is CancellationError {
-            // silently discard result when task was superseded
+            return  // defer resets isLoading = false
         } catch {
             errorMessage = error.localizedDescription
         }
-        isLoading = false
     }
 }

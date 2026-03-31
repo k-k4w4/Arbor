@@ -21,12 +21,17 @@ final class CommitListViewModel {
     private var gitService: GitService?
     private var graphActiveLanes: [String?] = []  // incremental graph state across pages
 
+    func cancelAll() {
+        loadTask?.cancel()
+    }
+
     func loadInitial(ref: String, service: GitService) {
         loadTask?.cancel()
         commits = []
         filteredCommits = []
         fetchOffset = 0
         hasMore = true
+        isLoading = true
         selectedCommit = nil
         errorMessage = nil
         graphActiveLanes = []
@@ -37,6 +42,7 @@ final class CommitListViewModel {
 
     func loadMore() {
         guard !isLoading, hasMore, gitService != nil else { return }
+        isLoading = true
         loadTask = Task { await self.fetchPage() }
     }
 
@@ -47,7 +53,6 @@ final class CommitListViewModel {
 
     private func fetchPage() async {
         guard let service = gitService else { return }
-        isLoading = true
         do {
             let output = try await service.fetchLog(ref: currentRef, limit: pageSize, offset: fetchOffset)
             var newCommits = GitLogParser.parse(output)

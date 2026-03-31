@@ -1,7 +1,7 @@
 import Foundation
 
 struct GitLogParser {
-    // git log format fields (NUL-separated, terminated by ---COMMIT_END---):
+    // git log format fields (NUL-separated, terminated by ASCII RS \x1E):
     // 0:SHA 1:parents 2:authorName 3:authorEmail 4:authorDate
     // 5:committerName 6:committerDate 7:subject 8:body 9:decoration(%D)
     private static let dateFormatter: DateFormatter = {
@@ -13,7 +13,7 @@ struct GitLogParser {
 
     static func parse(_ output: String) -> [Commit] {
         output
-            .components(separatedBy: "---COMMIT_END---")
+            .components(separatedBy: "\u{1E}")
             .compactMap { parseBlock($0) }
     }
 

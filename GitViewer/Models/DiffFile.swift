@@ -17,7 +17,7 @@ struct DiffFile: Identifiable {
     var isBinary: Bool
 
     init(status: FileStatus, oldPath: String? = nil, newPath: String, isBinary: Bool = false) {
-        self.id = newPath
+        self.id = "\(status.rawValue)-\(newPath)"
         self.status = status
         self.oldPath = oldPath
         self.newPath = newPath

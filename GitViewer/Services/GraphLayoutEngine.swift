@@ -1,4 +1,4 @@
-import SwiftUI
+import Foundation
 
 struct GraphLayoutEngine {
     // Process only `commits` (new commits for this page) using the current `activeLanes` state.
@@ -56,42 +56,35 @@ struct GraphLayoutEngine {
 
             for fromLane in 0..<topLanes.count {
                 guard let lSHA = topLanes[fromLane] else { continue }
-                let color = Color.graphColor(forLane: fromLane)
 
                 if lSHA == sha {
                     // Current commit: draw outgoing lines to parent lanes
                     for pSHA in parents {
                         if let toLane = nextActiveLanes.firstIndex(where: { $0 == pSHA }) {
                             let type: GraphLineType = toLane == fromLane ? .continuation : .mergeIn
-                            lines.append(GraphLine(fromLane: fromLane, toLane: toLane, type: type, color: color))
+                            lines.append(GraphLine(fromLane: fromLane, toLane: toLane, type: type, colorLane: fromLane))
                         }
                     }
                 } else {
                     // Pass-through lane
                     if let toLane = nextActiveLanes.firstIndex(where: { $0 == lSHA }) {
                         let type: GraphLineType = fromLane == toLane ? .continuation : .branchOut
-                        lines.append(GraphLine(fromLane: fromLane, toLane: toLane, type: type, color: color))
+                        lines.append(GraphLine(fromLane: fromLane, toLane: toLane, type: type, colorLane: fromLane))
                     }
                 }
             }
 
             // New branch tip: no incoming line, but add outgoing lines from myLane
             if !wasTracked {
-                let color = Color.graphColor(forLane: myLane)
                 for pSHA in parents {
                     if let toLane = nextActiveLanes.firstIndex(where: { $0 == pSHA }) {
-                        lines.append(GraphLine(fromLane: myLane, toLane: toLane, type: .continuation, color: color))
+                        lines.append(GraphLine(fromLane: myLane, toLane: toLane, type: .continuation, colorLane: myLane))
                     }
                 }
             }
 
             let totalLanes = max(activeLanes.count, nextActiveLanes.count, 1)
-            commits[i].graphNode = GraphNode(
-                lane: myLane,
-                totalLanes: totalLanes,
-                lines: lines,
-                dotColor: Color.graphColor(forLane: myLane)
-            )
+            commits[i].graphNode = GraphNode(lane: myLane, totalLanes: totalLanes, lines: lines)
 
             activeLanes = nextActiveLanes
             while activeLanes.last == nil {

@@ -62,14 +62,16 @@ struct GitDiffParser {
                     newLine = newStart
                 }
             } else if pendingHunk != nil {
+                // hunks.count = index of the current (pending) hunk in the final array
+                let hunkIndex = hunks.count
                 if line.hasPrefix("+"), !line.hasPrefix("+++") {
-                    pendingLines.append(DiffLine(type: .added, content: String(line.dropFirst()), newLineNumber: newLine))
+                    pendingLines.append(DiffLine(hunkIndex: hunkIndex, index: pendingLines.count, type: .added, content: String(line.dropFirst()), newLineNumber: newLine))
                     newLine += 1
                 } else if line.hasPrefix("-"), !line.hasPrefix("---") {
-                    pendingLines.append(DiffLine(type: .deleted, content: String(line.dropFirst()), oldLineNumber: oldLine))
+                    pendingLines.append(DiffLine(hunkIndex: hunkIndex, index: pendingLines.count, type: .deleted, content: String(line.dropFirst()), oldLineNumber: oldLine))
                     oldLine += 1
                 } else if line.hasPrefix(" ") {
-                    pendingLines.append(DiffLine(type: .context, content: String(line.dropFirst()), oldLineNumber: oldLine, newLineNumber: newLine))
+                    pendingLines.append(DiffLine(hunkIndex: hunkIndex, index: pendingLines.count, type: .context, content: String(line.dropFirst()), oldLineNumber: oldLine, newLineNumber: newLine))
                     oldLine += 1
                     newLine += 1
                 }

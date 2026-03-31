@@ -22,7 +22,7 @@ struct CommitGraphView: View {
                     control1: CGPoint(x: fromX, y: size.height * 0.5),
                     control2: CGPoint(x: toX, y: size.height * 0.5)
                 )
-                context.stroke(path, with: .color(line.color), lineWidth: 2)
+                context.stroke(path, with: .color(Color.graphColor(forLane: line.colorLane)), lineWidth: 2)
             }
 
             let nodeX = CGFloat(node.lane) * laneWidth + laneWidth / 2
@@ -30,7 +30,7 @@ struct CommitGraphView: View {
                 x: nodeX - nodeRadius, y: cy - nodeRadius,
                 width: nodeRadius * 2, height: nodeRadius * 2
             )
-            context.fill(Path(ellipseIn: rect), with: .color(node.dotColor))
+            context.fill(Path(ellipseIn: rect), with: .color(Color.graphColor(forLane: node.lane)))
         }
         .frame(width: CGFloat(max(1, node.totalLanes)) * laneWidth)
     }

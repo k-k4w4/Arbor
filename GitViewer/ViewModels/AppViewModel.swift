@@ -9,8 +9,8 @@ final class AppViewModel {
     var sidebarVM: SidebarViewModel?
     var commitListVM: CommitListViewModel?
     var detailVM: DetailViewModel?
+    var errorMessage: String?
     private(set) var gitService: GitService?
-    private var loadTask: Task<Void, Never>?
 
     init() {
         repositories = RepositoryStore.shared.load()
@@ -21,7 +21,7 @@ final class AppViewModel {
 
     func addRepository(at url: URL) async throws {
         guard !repositories.contains(where: { $0.path == url }) else { return }
-        let service = GitService(repositoryURL: url)
+        let service = try GitService(repositoryURL: url)
         try await service.validateRepository()
         let headBranch = try await service.fetchHeadBranch()
         var repo = Repository(path: url)
@@ -50,17 +50,23 @@ final class AppViewModel {
     }
 
     func selectRepository(_ repo: Repository) {
+        // Cancel all in-flight tasks on old VMs before replacing them
+        sidebarVM?.cancelAll()
+        commitListVM?.cancelAll()
+        detailVM?.cancelAll()
         selectedRepository = repo
-        let service = GitService(repositoryURL: repo.path)
-        gitService = service
+        do {
+            gitService = try GitService(repositoryURL: repo.path)
+        } catch {
+            errorMessage = error.localizedDescription
+            return
+        }
+        guard let service = gitService else { return }
         let sidebar = SidebarViewModel()
         sidebarVM = sidebar
         commitListVM = CommitListViewModel()
         detailVM = DetailViewModel()
-        loadTask?.cancel()
-        loadTask = Task {
-            await sidebar.load(service: service)
-        }
+        sidebar.scheduleLoad(service: service)
     }
 
     func refresh() {
@@ -68,9 +74,6 @@ final class AppViewModel {
         if let ref = sidebar.selectedRef, let commitList = commitListVM {
             commitList.loadInitial(ref: ref.gitRef, service: service)
         }
-        loadTask?.cancel()
-        loadTask = Task {
-            await sidebar.load(service: service)
-        }
+        sidebar.scheduleLoad(service: service)
     }
 }

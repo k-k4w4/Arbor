@@ -8,14 +8,16 @@ enum DiffLineType {
 }
 
 struct DiffLine: Identifiable {
-    let id: UUID
+    // Stable ID: index within the hunk's lines array, prefixed by type.
+    // Deterministic across re-parses so SwiftUI only re-renders changed lines.
+    let id: String
     var type: DiffLineType
     var content: String
     var oldLineNumber: Int?
     var newLineNumber: Int?
 
-    init(type: DiffLineType, content: String, oldLineNumber: Int? = nil, newLineNumber: Int? = nil) {
-        self.id = UUID()
+    init(hunkIndex: Int, index: Int, type: DiffLineType, content: String, oldLineNumber: Int? = nil, newLineNumber: Int? = nil) {
+        self.id = "\(hunkIndex)-\(type)-\(index)"
         self.type = type
         self.content = content
         self.oldLineNumber = oldLineNumber
@@ -24,7 +26,8 @@ struct DiffLine: Identifiable {
 }
 
 struct DiffHunk: Identifiable {
-    let id: UUID
+    // Stable ID based on hunk position so SwiftUI can diff across re-parses
+    var id: String { "\(oldStart)-\(newStart)-\(header)" }
     var header: String
     var oldStart: Int
     var oldCount: Int
@@ -33,7 +36,6 @@ struct DiffHunk: Identifiable {
     var lines: [DiffLine]
 
     init(header: String, oldStart: Int, oldCount: Int, newStart: Int, newCount: Int) {
-        self.id = UUID()
         self.header = header
         self.oldStart = oldStart
         self.oldCount = oldCount

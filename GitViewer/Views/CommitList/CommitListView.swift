@@ -6,12 +6,15 @@ private struct CommitTaskKey: Equatable {
     let selectedRef: GitRef?
 }
 
+// Sentinel used when commitListVM is nil so task(id:) doesn't re-fire on every body evaluation
+private let noVMSentinel = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
+
 struct CommitListView: View {
     @Environment(AppViewModel.self) private var appViewModel
 
     private var taskKey: CommitTaskKey {
         CommitTaskKey(
-            vmInstanceID: appViewModel.commitListVM?.instanceID ?? UUID(),
+            vmInstanceID: appViewModel.commitListVM?.instanceID ?? noVMSentinel,
             selectedRef: appViewModel.sidebarVM?.selectedRef
         )
     }

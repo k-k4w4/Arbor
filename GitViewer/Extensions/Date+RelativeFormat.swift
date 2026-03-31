@@ -1,6 +1,12 @@
 import Foundation
 
 extension Date {
+    private static let shortDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "MMM d"
+        return f
+    }()
+
     var relativeDisplay: String {
         let now = Date()
         let interval = now.timeIntervalSince(self)
@@ -17,9 +23,7 @@ extension Date {
             let days = Int(interval / 86400)
             return days == 1 ? "yesterday" : "\(days) days ago"
         } else {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "MMM d"
-            return formatter.string(from: self)
+            return Self.shortDateFormatter.string(from: self)
         }
     }
 }

@@ -18,9 +18,37 @@ actor GitService {
     let repositoryURL: URL
     private let gitPath: String
 
-    init(repositoryURL: URL, gitPath: String = "/usr/bin/git") {
+    // Thread-safe lazy resolution via static let (Swift guarantees once-only initialization).
+    // Stores Result so a lookup failure is also cached and not retried on every init.
+    private static let resolvedGitPath: Result<String, Error> = {
+        let candidates = ["/usr/bin/git", "/usr/local/bin/git", "/opt/homebrew/bin/git"]
+        if let found = candidates.first(where: { FileManager.default.isExecutableFile(atPath: $0) }) {
+            return .success(found)
+        }
+        // Fall back to searching PATH via `which git`
+        let which = Process()
+        which.executableURL = URL(fileURLWithPath: "/usr/bin/which")
+        which.arguments = ["git"]
+        let pipe = Pipe()
+        which.standardOutput = pipe
+        which.standardError = Pipe()
+        do {
+            try which.run()
+        } catch {
+            return .failure(GitError.commandFailed("git executable not found. Install Xcode Command Line Tools: xcode-select --install"))
+        }
+        which.waitUntilExit()
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        let path = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard !path.isEmpty, FileManager.default.isExecutableFile(atPath: path) else {
+            return .failure(GitError.commandFailed("git executable not found. Install Xcode Command Line Tools: xcode-select --install"))
+        }
+        return .success(path)
+    }()
+
+    init(repositoryURL: URL, gitPath: String? = nil) throws {
         self.repositoryURL = repositoryURL
-        self.gitPath = gitPath
+        self.gitPath = try gitPath ?? GitService.resolvedGitPath.get()
     }
 
     // MARK: - Core runner
@@ -179,7 +207,8 @@ actor GitService {
     // MARK: - Log
 
     func fetchLog(ref: String = "HEAD", limit: Int = 200, offset: Int = 0) async throws -> String {
-        let format = "%H%x00%P%x00%an%x00%ae%x00%ai%x00%cn%x00%ci%x00%s%x00%b%x00%D%x00---COMMIT_END---"
+        // Use %x1E (ASCII Record Separator) as commit delimiter — safe against any commit message content
+        let format = "%H%x00%P%x00%an%x00%ae%x00%ai%x00%cn%x00%ci%x00%s%x00%b%x00%D%x1E"
         return try await run([
             "log", ref,
             "--format=\(format)",
@@ -189,7 +218,7 @@ actor GitService {
     }
 
     func fetchAllLog(limit: Int = 1000) async throws -> String {
-        let format = "%H%x00%P%x00%an%x00%ae%x00%ai%x00%cn%x00%ci%x00%s%x00%b%x00%D%x00---COMMIT_END---"
+        let format = "%H%x00%P%x00%an%x00%ae%x00%ai%x00%cn%x00%ci%x00%s%x00%b%x00%D%x1E"
         return try await run([
             "log", "--all",
             "--format=\(format)",
