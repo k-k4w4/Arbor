@@ -1,10 +1,10 @@
 import SwiftUI
 
-// Phase 5: Canvas-based commit graph lane renderer
+// Canvas-based commit graph lane renderer.
+// Height is determined by the parent (no fixed height constraint).
 struct CommitGraphView: View {
     let node: GraphNode
 
-    private let rowHeight: CGFloat = 28
     private let laneWidth: CGFloat = 14
     private let nodeRadius: CGFloat = 4
 
@@ -12,7 +12,6 @@ struct CommitGraphView: View {
         Canvas { context, size in
             let cy = size.height / 2
 
-            // Draw lines
             for line in node.lines {
                 let fromX = CGFloat(line.fromLane) * laneWidth + laneWidth / 2
                 let toX = CGFloat(line.toLane) * laneWidth + laneWidth / 2
@@ -26,7 +25,6 @@ struct CommitGraphView: View {
                 context.stroke(path, with: .color(line.color), lineWidth: 2)
             }
 
-            // Draw node dot
             let nodeX = CGFloat(node.lane) * laneWidth + laneWidth / 2
             let rect = CGRect(
                 x: nodeX - nodeRadius, y: cy - nodeRadius,
@@ -34,6 +32,6 @@ struct CommitGraphView: View {
             )
             context.fill(Path(ellipseIn: rect), with: .color(node.dotColor))
         }
-        .frame(width: CGFloat(max(1, node.totalLanes)) * laneWidth, height: rowHeight)
+        .frame(width: CGFloat(max(1, node.totalLanes)) * laneWidth)
     }
 }
