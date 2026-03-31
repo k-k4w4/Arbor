@@ -3,6 +3,26 @@ import SwiftUI
 struct CommitRow: View {
     let commit: Commit
 
+    private var rowAccessibilityLabel: String {
+        var parts: [String] = []
+        if !commit.refs.isEmpty {
+            let refLabels = commit.refs.map { ref in
+                switch ref.refType {
+                case .localBranch:  return "ブランチ \(ref.shortName)"
+                case .remoteBranch: return "リモートブランチ \(ref.shortName)"
+                case .tag:          return "タグ \(ref.shortName)"
+                case .stash:        return "スタッシュ \(ref.shortName)"
+                }
+            }
+            parts.append(contentsOf: refLabels)
+        }
+        parts.append(commit.subject)
+        parts.append(commit.authorName)
+        parts.append(commit.authorDate.relativeDisplay)
+        parts.append("SHA \(commit.shortSHA)")
+        return parts.joined(separator: ", ")
+    }
+
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
             if let node = commit.graphNode {
@@ -36,5 +56,7 @@ struct CommitRow: View {
             .padding(.leading, 6)
             .padding(.vertical, 2)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(rowAccessibilityLabel)
     }
 }

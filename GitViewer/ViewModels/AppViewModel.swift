@@ -62,4 +62,15 @@ final class AppViewModel {
             await sidebar.load(service: service)
         }
     }
+
+    func refresh() {
+        guard let service = gitService, let sidebar = sidebarVM else { return }
+        if let ref = sidebar.selectedRef, let commitList = commitListVM {
+            commitList.loadInitial(ref: ref.gitRef, service: service)
+        }
+        loadTask?.cancel()
+        loadTask = Task {
+            await sidebar.load(service: service)
+        }
+    }
 }

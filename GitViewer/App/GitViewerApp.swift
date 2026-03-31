@@ -9,6 +9,7 @@ struct GitViewerApp: App {
         WindowGroup {
             RootView()
                 .environment(appViewModel)
+                .focusedValue(\.appViewModel, appViewModel)
         }
         .commands {
             AppCommands()

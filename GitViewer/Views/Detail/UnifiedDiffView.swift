@@ -42,6 +42,15 @@ struct UnifiedDiffView: View {
         }
         .padding(.vertical, 1)
         .background(lineBackground(line.type))
+        .accessibilityLabel(diffLineAccessibilityLabel(line))
+    }
+
+    private func diffLineAccessibilityLabel(_ line: DiffLine) -> String {
+        switch line.type {
+        case .added:   return "追加: \(line.content)"
+        case .deleted: return "削除: \(line.content)"
+        default:       return line.content
+        }
     }
 
     @ViewBuilder

@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 private struct CommitTaskKey: Equatable {
     let vmInstanceID: UUID
@@ -25,6 +26,23 @@ struct CommitListView: View {
                 else { return }
                 vm.loadInitial(ref: ref.gitRef, service: service)
             }
+            .toolbar {
+                ToolbarItem(placement: .navigation) {
+                    if let ref = appViewModel.sidebarVM?.selectedRef {
+                        Label(ref.shortName, systemImage: "arrow.triangle.branch")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        appViewModel.refresh()
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .help("リフレッシュ (⌘R)")
+                }
+            }
     }
 
     @ViewBuilder
@@ -45,17 +63,24 @@ struct CommitListView: View {
                     message: vm.searchQuery.isEmpty ? "コミットがありません" : "一致するコミットがありません"
                 )
             } else {
-                List(vm.filteredCommits) { commit in
+                List(vm.filteredCommits, selection: Binding(
+                    get: { vm.selectedCommit?.id },
+                    set: { id in vm.selectedCommit = vm.filteredCommits.first { $0.id == id } }
+                )) { commit in
                     CommitRow(commit: commit)
+                        .tag(commit.id)
                         .listRowInsets(EdgeInsets(top: 6, leading: 10, bottom: 6, trailing: 10))
-                        .listRowBackground(
-                            vm.selectedCommit?.id == commit.id
-                                ? Color.accentColor.opacity(0.12)
-                                : Color.clear
-                        )
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            vm.selectedCommit = commit
+                        .contextMenu {
+                            Button("SHAをコピー") {
+                                NSPasteboard.general.clearContents()
+                                NSPasteboard.general.setString(commit.id, forType: .string)
+                            }
+                            Divider()
+                            Button("Finderで表示") {
+                                if let repoPath = appViewModel.selectedRepository?.path.path {
+                                    NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: repoPath)
+                                }
+                            }
                         }
                         .onAppear {
                             if commit.id == vm.filteredCommits.last?.id {

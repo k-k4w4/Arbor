@@ -13,6 +13,16 @@ struct RefBadge: View {
             .foregroundStyle(badgeColor)
             .clipShape(Capsule())
             .overlay(Capsule().stroke(badgeColor.opacity(0.35), lineWidth: 0.5))
+            .accessibilityLabel(accessibilityText)
+    }
+
+    private var accessibilityText: String {
+        switch ref.refType {
+        case .localBranch:          return "ブランチ \(ref.shortName)"
+        case .remoteBranch:         return "リモートブランチ \(ref.shortName)"
+        case .tag:                  return "タグ \(ref.shortName)"
+        case .stash:                return "スタッシュ \(ref.shortName)"
+        }
     }
 
     private var badgeColor: Color {
