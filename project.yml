@@ -1,0 +1,35 @@
+name: GitViewer
+options:
+  bundleIdPrefix: com.kkawahara
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+
+targets:
+  GitViewer:
+    type: application
+    platform: macOS
+    sources:
+      - GitViewer
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.kkawahara.GitViewer
+        GENERATE_INFOPLIST_FILE: YES
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_VERSION: "5.9"
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        CODE_SIGN_ENTITLEMENTS: GitViewer/Resources/GitViewer.entitlements
+        ENABLE_HARDENED_RUNTIME: YES
+
+  GitViewerTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - GitViewerTests
+    dependencies:
+      - target: GitViewer
+    settings:
+      base:
+        SWIFT_VERSION: "5.9"
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
