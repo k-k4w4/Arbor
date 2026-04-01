@@ -16,15 +16,18 @@ final class CommitListViewModel {
     private var fetchOffset: Int = 0
     private let pageSize = 200
     private var loadTask: Task<Void, Never>?
+    private var searchTask: Task<Void, Never>?
     private var gitService: GitService?
     private var graphActiveLanes: [String?] = []  // incremental graph state across pages
 
     func cancelAll() {
         loadTask?.cancel()
+        searchTask?.cancel()
     }
 
     func loadInitial(ref: String, service: GitService) {
         loadTask?.cancel()
+        searchTask?.cancel()
         commits = []
         filteredCommits = []
         fetchOffset = 0
@@ -35,19 +38,40 @@ final class CommitListViewModel {
         graphActiveLanes = []
         currentRef = ref
         gitService = service
+        searchQuery = ""
         loadTask = Task { await self.fetchPage() }
     }
 
     func loadMore() {
-        guard !isLoading, hasMore, gitService != nil else { return }
+        guard !isLoading, hasMore, gitService != nil, searchQuery.isEmpty else { return }
         loadTask?.cancel()
         isLoading = true
         loadTask = Task { await self.fetchPage() }
     }
 
-    func updateSearch(_ query: String) {
-        searchQuery = query
-        applyFilter()
+    // Called from view's onChange(of: searchQuery) — fires only on actual value changes,
+    // not on spurious focus events that macOS searchable may emit.
+    func searchQueryChanged(_ query: String) {
+        searchTask?.cancel()
+        if query.isEmpty {
+            // loadInitial clears commits before setting searchQuery = "".
+            // If commits is empty here, loadInitial just ran and loadTask is managing
+            // isLoading — don't interfere.
+            if !commits.isEmpty {
+                filteredCommits = commits
+                isLoading = false
+            }
+        } else {
+            loadTask?.cancel()
+            filteredCommits = []
+            isLoading = true
+            searchTask = Task {
+                do { try await Task.sleep(nanoseconds: 300_000_000) } catch {
+                    return  // Cancelled; caller already manages isLoading
+                }
+                await self.performGlobalSearch(query: query)
+            }
+        }
     }
 
     private func fetchPage() async {
@@ -64,7 +88,9 @@ final class CommitListViewModel {
             commits.append(contentsOf: newCommits)
             fetchOffset += rawCount
             hasMore = rawCount == pageSize
-            applyFilter()
+            if searchQuery.isEmpty {
+                filteredCommits = commits
+            }
             isLoading = false
         } catch is CancellationError {
             // Newer loadInitial is managing isLoading; don't touch it
@@ -74,16 +100,33 @@ final class CommitListViewModel {
         }
     }
 
-    private func applyFilter() {
-        if searchQuery.isEmpty {
-            filteredCommits = commits
-        } else {
-            let q = searchQuery.lowercased()
-            filteredCommits = commits.filter {
-                $0.subject.lowercased().contains(q) ||
-                $0.authorName.lowercased().contains(q) ||
-                $0.shortSHA.lowercased().contains(q)
+    private func performGlobalSearch(query: String) async {
+        guard let service = gitService, !query.isEmpty else { return }
+        do {
+            // Search commit messages (--grep covers subject + body) and author name/email concurrently
+            async let grepOutput = service.fetchLogSearch(ref: currentRef, grep: query)
+            async let authorOutput = service.fetchLogSearchByAuthor(ref: currentRef, author: query)
+            let (grep, author) = try await (grepOutput, authorOutput)
+
+            var byMessage = GitLogParser.parse(grep)
+            let byAuthor = GitLogParser.parse(author)
+
+            // Merge, deduplicate by SHA, sort by author date descending
+            var seen = Set(byMessage.map { $0.id })
+            for c in byAuthor where !seen.contains(c.id) {
+                seen.insert(c.id)
+                byMessage.append(c)
             }
+            byMessage.sort { $0.authorDate > $1.authorDate }
+
+            guard searchQuery == query else { isLoading = false; return }
+            filteredCommits = byMessage
+            isLoading = false
+        } catch is CancellationError {
+        } catch {
+            guard searchQuery == query else { isLoading = false; return }
+            errorMessage = error.localizedDescription
+            isLoading = false
         }
     }
 }

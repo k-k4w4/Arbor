@@ -8,6 +8,17 @@ extension Date {
         return f
     }()
 
+    private static let absoluteFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyy-MM-dd HH:mm"
+        return f
+    }()
+
+    var absoluteDisplay: String {
+        Self.absoluteFormatter.string(from: self)
+    }
+
     var relativeDisplay: String {
         let now = Date()
         let interval = now.timeIntervalSince(self)

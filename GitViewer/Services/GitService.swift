@@ -265,6 +265,34 @@ actor GitService {
         ])
     }
 
+    func fetchLogSearch(ref: String, grep: String, limit: Int = 500) async throws -> String {
+        guard !ref.isEmpty, !ref.hasPrefix("-") else {
+            throw GitError.parseError("Invalid ref: \(ref)")
+        }
+        let format = "%H%x00%P%x00%an%x00%ae%x00%ai%x00%cn%x00%ci%x00%s%x00%b%x00%D%x1E"
+        return try await run([
+            "log", ref,
+            "--format=\(format)",
+            "--grep=\(grep)",
+            "--fixed-strings", "-i",
+            "-n", "\(limit)"
+        ])
+    }
+
+    func fetchLogSearchByAuthor(ref: String, author: String, limit: Int = 500) async throws -> String {
+        guard !ref.isEmpty, !ref.hasPrefix("-") else {
+            throw GitError.parseError("Invalid ref: \(ref)")
+        }
+        let format = "%H%x00%P%x00%an%x00%ae%x00%ai%x00%cn%x00%ci%x00%s%x00%b%x00%D%x1E"
+        return try await run([
+            "log", ref,
+            "--format=\(format)",
+            "--author=\(author)",
+            "--fixed-strings", "-i",
+            "-n", "\(limit)"
+        ])
+    }
+
     // MARK: - Diff
 
     func fetchDiff(commit sha: String) async throws -> String {

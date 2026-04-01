@@ -16,6 +16,14 @@ struct CommitListView: View {
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
+                        appViewModel.showAbsoluteDates.toggle()
+                    } label: {
+                        Image(systemName: appViewModel.showAbsoluteDates ? "calendar" : "clock")
+                    }
+                    .help(appViewModel.showAbsoluteDates ? "相対表示に切り替え" : "絶対日時表示に切り替え")
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
                         appViewModel.refresh()
                     } label: {
                         Image(systemName: "arrow.clockwise")
@@ -49,7 +57,7 @@ struct CommitListView: View {
                     get: { vm.selectedCommit?.id },
                     set: { id in vm.selectedCommit = vm.filteredCommits.first { $0.id == id } }
                 )) { commit in
-                    CommitRow(commit: commit)
+                    CommitRow(commit: commit, showAbsoluteDates: appViewModel.showAbsoluteDates)
                         .tag(commit.id)
                         .listRowInsets(EdgeInsets(top: 6, leading: 10, bottom: 6, trailing: 10))
                         .contextMenu {
@@ -79,8 +87,11 @@ struct CommitListView: View {
             }
         }
         .searchable(
-            text: Binding(get: { vm.searchQuery }, set: { vm.updateSearch($0) }),
+            text: Binding(get: { vm.searchQuery }, set: { vm.searchQuery = $0 }),
             prompt: "コミットを検索"
         )
+        .onChange(of: vm.searchQuery) { _, newValue in
+            vm.searchQueryChanged(newValue)
+        }
     }
 }

@@ -2,6 +2,20 @@ import SwiftUI
 
 struct CommitRow: View {
     let commit: Commit
+    let showAbsoluteDates: Bool
+    @State private var isBodyExpanded = false
+
+    private var commitBody: String? {
+        let separator = commit.subject + "\n\n"
+        guard commit.message.hasPrefix(separator) else { return nil }
+        let body = String(commit.message.dropFirst(separator.count))
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return body.isEmpty ? nil : body
+    }
+
+    private var dateText: String {
+        showAbsoluteDates ? commit.authorDate.absoluteDisplay : commit.authorDate.relativeDisplay
+    }
 
     private var rowAccessibilityLabel: String {
         var parts: [String] = []
@@ -18,7 +32,7 @@ struct CommitRow: View {
         }
         parts.append(commit.subject)
         parts.append(commit.authorName)
-        parts.append(commit.authorDate.relativeDisplay)
+        parts.append(dateText)
         parts.append("SHA \(commit.shortSHA)")
         return parts.joined(separator: ", ")
     }
@@ -40,12 +54,26 @@ struct CommitRow: View {
                 Text(commit.subject)
                     .font(.body)
                     .lineLimit(2)
+                if let body = commitBody {
+                    if isBodyExpanded {
+                        Text(body)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .textSelection(.enabled)
+                    }
+                    Button(isBodyExpanded ? "閉じる" : "もっと見る") {
+                        isBodyExpanded.toggle()
+                    }
+                    .font(.caption)
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Color.accentColor)
+                }
                 HStack(spacing: 8) {
                     Text(commit.authorName)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Text(commit.authorDate.relativeDisplay)
+                    Text(dateText)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Text(commit.shortSHA)

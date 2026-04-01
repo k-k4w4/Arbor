@@ -10,6 +10,7 @@ final class AppViewModel {
     var commitListVM: CommitListViewModel?
     var detailVM: DetailViewModel?
     var errorMessage: String?
+    var showAbsoluteDates: Bool = false
     private(set) var gitService: GitService?
     private var refObserveGeneration = 0
 
