@@ -11,6 +11,7 @@ final class DetailViewModel {
     var isLoadingFiles: Bool = false
     var isLoadingDiff: Bool = false
     var errorMessage: String?
+    var diffInfoMessage: String?
 
     private var gitService: GitService?
     private var fileTask: Task<Void, Never>?
@@ -31,6 +32,7 @@ final class DetailViewModel {
         isLoadingFiles = false
         isLoadingDiff = false
         errorMessage = nil
+        diffInfoMessage = nil
     }
 
     func load(commit: Commit, service: GitService) {
@@ -44,6 +46,7 @@ final class DetailViewModel {
         isLoadingFiles = true
         isLoadingDiff = false
         errorMessage = nil
+        diffInfoMessage = nil
         fileTask = Task { [weak self] in
             do {
                 let output = try await service.fetchDiff(commit: commit.id)
@@ -69,12 +72,24 @@ final class DetailViewModel {
         diffTask?.cancel()
         selectedFile = file
         diffHunks = []
+        diffInfoMessage = nil
         isLoadingDiff = true
         diffTask = Task { [weak self] in
             do {
                 let output = try await service.fetchDiffContent(commit: commit.id, file: file.newPath)
                 guard let self, !Task.isCancelled else { return }
-                self.diffHunks = GitDiffParser.parseDiffContent(output)
+                // Size check first to avoid scanning large strings; use .count
+                // (== character count) which is reliable for both UTF-8 and Latin-1 decoded output.
+                if output.count > 5_000_000 {
+                    self.diffInfoMessage = "ファイルが大きすぎるため差分を表示できません"
+                    self.diffHunks = []
+                } else if output.contains("\nBinary files ") || output.hasPrefix("Binary files ") {
+                    self.diffInfoMessage = "バイナリファイルのため差分を表示できません"
+                    self.diffHunks = []
+                } else {
+                    self.diffInfoMessage = nil
+                    self.diffHunks = GitDiffParser.parseDiffContent(output)
+                }
                 self.isLoadingDiff = false
             } catch is CancellationError {
                 // clear() or the next selectFile() manages isLoadingDiff; don't overwrite here.

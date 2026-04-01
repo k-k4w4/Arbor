@@ -10,6 +10,7 @@ struct Commit: Identifiable, Hashable {
     var authorEmail: String
     var authorDate: Date
     var committerName: String
+    var committerEmail: String
     var committerDate: Date
     var refs: [GitRef]
     var graphNode: GraphNode?

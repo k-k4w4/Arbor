@@ -46,6 +46,7 @@ GitViewer/
 ### GitService (actor)
 - `run(_ arguments: [String]) async throws -> String` がすべての git コマンドの基盤
 - stdout/stderr を並行読み込み（パイプバッファのデッドロック対策）
+- `process.environment` に `LC_ALL=C`, `GIT_TERMINAL_PROMPT=0` を設定（ローカライズ対策）
 - キャンセレーション対応
 - エラー型: `GitError.notARepository` / `.commandFailed(stderr)` / `.parseError(msg)`
 
@@ -65,11 +66,31 @@ GitViewer/
 - `fetchDiffContent(commit:file:)` → unified diff (`git show <sha> -- <file>`)
 - `GitDiffParser.parseDiffContent` が DiffHunk/DiffLine に変換
 - `UnifiedDiffView` で `LazyVStack` + 行番号/prefix/背景色
+- バイナリ/大容量（5MB超）は `DetailViewModel.diffInfoMessage` でフォールバック表示
+
+### ログフォーマット
+`git log` の `--format` フィールド（NUL区切り、RS区切り）:
+`0:SHA 1:parents 2:authorName 3:authorEmail 4:authorDate 5:committerName 6:committerEmail 7:committerDate 8:subject 9:body 10:decoration`
+
+### ahead/behind
+- `GitRef` に `ahead: Int`, `behind: Int` フィールドあり
+- `listBranches()` で `%(upstream:track)` をパースして設定
+- `BranchCell` でローカルブランチのみ `↑N ↓M` バッジ表示
+
+### ウィンドウタイトル
+- `AppViewModel.windowTitle` → `"リポジトリ名 — ブランチ名"` (ref.gitRef 使用)
+- `RootView` で `.navigationTitle(appViewModel.windowTitle)` を適用
 
 ### ⌘R リフレッシュ
 - `AppViewModel.refresh()` → commitList の `loadInitial` + sidebar の `load` を並行実行
 - `AppCommands` から `@FocusedValue(\.appViewModel)` 経由で呼び出し
 - `GitViewerApp` の root view に `.focusedValue(\.appViewModel, appViewModel)` が必要
+
+### サイドバークリック判定
+- `List(selection:)` を使わず、`listRowInsets(EdgeInsets())` + セル内パディング方式
+- `BranchListSection` / `RepositoryListSection` で `EdgeInsets(top:6, leading:10, bottom:6, trailing:10)` をセル内側に付与し、行インセットをゼロに
+- `contentShape(Rectangle())` + `onTapGesture` がセル全体（`listRowBackground` と同領域）をカバー
+- リポジトリとブランチは独立した `listRowBackground` でそれぞれハイライト（同時選択可能）
 
 ## カラーシステム (`Color+GitViewer.swift`)
 
@@ -101,10 +122,25 @@ GitViewer/
 - **Phase 8 完了**: Diff表示改善
   - `ChangedFilesList` の高さ固定（160pt）廃止 → `VSplitView` でリサイズ可能に
   - diff 行を常時折り返し表示（`wrapLines` 固定、トグルなし）
+- **Phase 8.5 完了**: UI修正
+  - ウィンドウ再オープン（`applicationShouldHandleReopen`）
+  - diff枠サイズ固定（`isLoadingDiff` 中も `minHeight` 維持）
+- **Phase 9 完了**: 検索改善
+  - `git log --grep` による全履歴検索（300msデバウンス）
+  - `--author` 並行検索・OR結合
+  - 絶対/相対日時トグル（`AppViewModel.showAbsoluteDates`、時計/カレンダーアイコン）
+  - コミットbody展開（CommitRow 内「もっと見る」ボタン）
+- **Phase 10 完了**: 情報表示充実
+  - ブランチ ahead/behind カウント表示（`BranchCell` に `↑N ↓M` バッジ）
+  - committer 表示（author と name/email が異なる場合、`CommitInfoHeader` に追加）
+  - ウィンドウタイトル「リポジトリ名 — ブランチ名」反映
+  - バイナリ/大容量ファイルのフォールバック表示
+  - `LC_ALL=C` で git 出力のローカライズ問題を防止
+- **サイドバークリック判定修正**: `listRowInsets(EdgeInsets())` + 内側パディング方式で全幅タップ対応
 
 ## テスト
 
-`GitViewerTests/` に 81 件のユニットテスト（2026-04-01 時点）。
+`GitViewerTests/` に 81 件のユニットテスト（2026-04-02 時点）。
 対象: `GitLogParser`, `GitDiffParser`, `GraphLayoutEngine`, `Date+RelativeFormat`, `String+SHA`
 
 実行: `xcodebuild -scheme GitViewer -destination 'platform=macOS' test`
@@ -112,9 +148,6 @@ GitViewer/
 ## 将来拡張（ロードマップ）
 
 詳細は memory の `project_roadmap.md` を参照。概要：
-- Phase 8.5: UI修正（ウィンドウ再オープン・diff枠サイズ固定）【High】
-- Phase 9: 検索改善（全履歴 grep・日時切り替え）【High】
-- Phase 10: 情報表示充実（ahead/behind・committer表示）【Medium】
 - Phase 11: Preferences 画面【Medium】
 - Phase 12: サイドバーブランチ/タグページング【Medium】
 - Phase 13: ローカル差分（未コミット変更）表示【Medium】

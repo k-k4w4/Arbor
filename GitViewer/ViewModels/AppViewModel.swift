@@ -11,6 +11,13 @@ final class AppViewModel {
     var detailVM: DetailViewModel?
     var errorMessage: String?
     var showAbsoluteDates: Bool = false
+
+    var windowTitle: String {
+        guard let repo = selectedRepository else { return "GitViewer" }
+        let repoName = repo.path.lastPathComponent
+        guard let ref = sidebarVM?.selectedRef else { return repoName }
+        return "\(repoName) — \(ref.gitRef)"
+    }
     private(set) var gitService: GitService?
     private var refObserveGeneration = 0
 

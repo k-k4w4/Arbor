@@ -12,6 +12,20 @@ struct BranchCell: View {
             Text(ref.shortName)
                 .lineLimit(1)
             Spacer()
+            if case .localBranch = ref.refType, (ref.ahead > 0 || ref.behind > 0) {
+                HStack(spacing: 2) {
+                    if ref.ahead > 0 {
+                        Text("↑\(ref.ahead)")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    if ref.behind > 0 {
+                        Text("↓\(ref.behind)")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
             if ref.isHead {
                 Image(systemName: "checkmark")
                     .font(.caption2)
@@ -19,7 +33,6 @@ struct BranchCell: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .listRowBackground(isSelected ? Color.accentColor.opacity(0.15) : Color.clear)
     }
 
     private var icon: String {

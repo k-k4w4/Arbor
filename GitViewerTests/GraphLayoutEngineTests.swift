@@ -14,7 +14,7 @@ final class GraphLayoutEngineTests: XCTestCase {
             id: sha, shortSHA: String(sha.prefix(7)), parentSHAs: parents,
             subject: "msg", message: "msg",
             authorName: "A", authorEmail: "a@a.com", authorDate: Date(),
-            committerName: "A", committerDate: Date(),
+            committerName: "A", committerEmail: "a@a.com", committerDate: Date(),
             refs: []
         )
     }

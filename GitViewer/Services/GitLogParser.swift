@@ -3,7 +3,7 @@ import Foundation
 struct GitLogParser {
     // git log format fields (NUL-separated, terminated by ASCII RS \x1E):
     // 0:SHA 1:parents 2:authorName 3:authorEmail 4:authorDate
-    // 5:committerName 6:committerDate 7:subject 8:body 9:decoration(%D)
+    // 5:committerName 6:committerEmail 7:committerDate 8:subject 9:body 10:decoration(%D)
     private static let dateFormatter: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale(identifier: "en_US_POSIX")
@@ -19,31 +19,32 @@ struct GitLogParser {
 
     private static func parseBlock(_ block: String) -> Commit? {
         let parts = block.components(separatedBy: "\0")
-        guard parts.count >= 9 else { return nil }
+        guard parts.count >= 10 else { return nil }
 
         let sha = parts[0].trimmingCharacters(in: .whitespacesAndNewlines)
         guard sha.count == 40, sha.allSatisfy({ $0.isHexDigit }) else { return nil }
 
         let parentSHAs = parts[1].split(separator: " ").map(String.init).filter { !$0.isEmpty }
         let authorDate = dateFormatter.date(from: parts[4].trimmingCharacters(in: .whitespacesAndNewlines)) ?? Date.distantPast
-        let committerDate = dateFormatter.date(from: parts[6].trimmingCharacters(in: .whitespacesAndNewlines)) ?? Date.distantPast
-        let body = parts[8].trimmingCharacters(in: .whitespacesAndNewlines)
+        let committerDate = dateFormatter.date(from: parts[7].trimmingCharacters(in: .whitespacesAndNewlines)) ?? Date.distantPast
+        let body = parts[9].trimmingCharacters(in: .whitespacesAndNewlines)
         // decoration (%D) is always the last NUL-separated token because it is the
         // final field before the %x1E record separator.  When %b (body) contains NUL
-        // characters extra tokens appear, so using parts.last is more robust than parts[9].
-        guard parts.count >= 10 else { return nil }
+        // characters extra tokens appear, so using parts.last is more robust than parts[10].
+        guard parts.count >= 11 else { return nil }
         let decoration = parts.last ?? ""
 
         return Commit(
             id: sha,
             shortSHA: String(sha.prefix(7)),
             parentSHAs: parentSHAs,
-            subject: parts[7],
-            message: body.isEmpty ? parts[7] : parts[7] + "\n\n" + body,
+            subject: parts[8],
+            message: body.isEmpty ? parts[8] : parts[8] + "\n\n" + body,
             authorName: parts[2],
             authorEmail: parts[3],
             authorDate: authorDate,
             committerName: parts[5],
+            committerEmail: parts[6],
             committerDate: committerDate,
             refs: parseDecoration(decoration)
         )

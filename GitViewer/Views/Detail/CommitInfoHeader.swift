@@ -28,6 +28,12 @@ struct CommitInfoHeader: View {
                 Label(commit.authorDate.relativeDisplay, systemImage: "clock")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                if commit.committerName != commit.authorName || commit.committerEmail != commit.authorEmail {
+                    Label(commit.committerName, systemImage: "person.badge.clock")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
             }
         }
         .padding(12)

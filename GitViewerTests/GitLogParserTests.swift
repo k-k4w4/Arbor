@@ -15,12 +15,13 @@ final class GitLogParserTests: XCTestCase {
         authorEmail: String = "alice@example.com",
         authorDate: String = "2025-01-15 10:30:00 +0000",
         committerName: String = "Alice",
+        committerEmail: String = "alice@example.com",
         committerDate: String = "2025-01-15 10:30:00 +0000",
         subject: String = "Test commit",
         body: String = "",
         decoration: String = ""
     ) -> String {
-        "\(sha)\0\(parents)\0\(authorName)\0\(authorEmail)\0\(authorDate)\0\(committerName)\0\(committerDate)\0\(subject)\0\(body)\0\(decoration)\u{1E}"
+        "\(sha)\0\(parents)\0\(authorName)\0\(authorEmail)\0\(authorDate)\0\(committerName)\0\(committerEmail)\0\(committerDate)\0\(subject)\0\(body)\0\(decoration)\u{1E}"
     }
 
     // MARK: - Basic parsing

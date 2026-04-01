@@ -64,6 +64,8 @@ struct DetailView: View {
                 ProgressView()
             } else if let error = vm.errorMessage, vm.diffHunks.isEmpty {
                 EmptyStateView(icon: "exclamationmark.triangle", message: error)
+            } else if let info = vm.diffInfoMessage {
+                EmptyStateView(icon: "doc.badge.ellipsis", message: info)
             } else if vm.diffHunks.isEmpty {
                 EmptyStateView(icon: "doc.text", message: "差分がありません")
             } else {

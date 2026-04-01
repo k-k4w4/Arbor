@@ -19,7 +19,6 @@ struct RepositoryCell: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .listRowBackground(isSelected ? Color.accentColor.opacity(0.15) : Color.clear)
         .task(id: repository.id) {
             pathExists = FileManager.default.fileExists(atPath: repository.path.path)
         }

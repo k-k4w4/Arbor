@@ -58,6 +58,11 @@ actor GitService {
         process.executableURL = URL(fileURLWithPath: gitPath)
         process.arguments = arguments
         process.currentDirectoryURL = repositoryURL
+        // Force C locale so git output (e.g. %(upstream:track)) is always in English.
+        var env = ProcessInfo.processInfo.environment
+        env["LC_ALL"] = "C"
+        env["GIT_TERMINAL_PROMPT"] = "0"
+        process.environment = env
 
         let stdoutPipe = Pipe()
         let stderrPipe = Pipe()
@@ -162,7 +167,7 @@ actor GitService {
     func listBranches() async throws -> [GitRef] {
         // Tab as field separator: safe because git prohibits control chars (< 0x20) in ref names.
         // for-each-ref uses a different format parser from git-log and does not interpret %xNN.
-        let format = "%(refname)\t%(refname:short)\t%(objectname:short)\t%(HEAD)"
+        let format = "%(refname)\t%(refname:short)\t%(objectname:short)\t%(HEAD)\t%(upstream:track)"
         let output = try await run([
             "for-each-ref",
             "--format=\(format)",
@@ -180,6 +185,17 @@ actor GitService {
                 let shortName = parts[1]
                 let sha = parts[2]
                 let isHead = parts[3] == "*"
+                // Parse "[ahead N, behind M]" from %(upstream:track)
+                let trackInfo = parts.count >= 5 ? parts[4] : ""
+                var ahead = 0, behind = 0
+                if let r = trackInfo.range(of: "ahead ") {
+                    let s = trackInfo[r.upperBound...]
+                    ahead = Int(s.prefix(while: { $0.isNumber })) ?? 0
+                }
+                if let r = trackInfo.range(of: "behind ") {
+                    let s = trackInfo[r.upperBound...]
+                    behind = Int(s.prefix(while: { $0.isNumber })) ?? 0
+                }
 
                 // refs/remotes/*/HEAD is a symbolic tracking pointer, not a real branch.
                 if fullRefname.hasPrefix("refs/remotes/") && fullRefname.hasSuffix("/HEAD") {
@@ -218,7 +234,9 @@ actor GitService {
                     shortName: displayName,
                     sha: sha,
                     refType: refType,
-                    isHead: isHead
+                    isHead: isHead,
+                    ahead: ahead,
+                    behind: behind
                 )
             }
     }
@@ -256,7 +274,7 @@ actor GitService {
             throw GitError.parseError("Invalid ref: \(ref)")
         }
         // Use %x1E (ASCII Record Separator) as commit delimiter — safe against any commit message content
-        let format = "%H%x00%P%x00%an%x00%ae%x00%ai%x00%cn%x00%ci%x00%s%x00%b%x00%D%x1E"
+        let format = "%H%x00%P%x00%an%x00%ae%x00%ai%x00%cn%x00%ce%x00%ci%x00%s%x00%b%x00%D%x1E"
         return try await run([
             "log", ref,
             "--format=\(format)",
@@ -269,7 +287,7 @@ actor GitService {
         guard !ref.isEmpty, !ref.hasPrefix("-") else {
             throw GitError.parseError("Invalid ref: \(ref)")
         }
-        let format = "%H%x00%P%x00%an%x00%ae%x00%ai%x00%cn%x00%ci%x00%s%x00%b%x00%D%x1E"
+        let format = "%H%x00%P%x00%an%x00%ae%x00%ai%x00%cn%x00%ce%x00%ci%x00%s%x00%b%x00%D%x1E"
         return try await run([
             "log", ref,
             "--format=\(format)",
@@ -283,7 +301,7 @@ actor GitService {
         guard !ref.isEmpty, !ref.hasPrefix("-") else {
             throw GitError.parseError("Invalid ref: \(ref)")
         }
-        let format = "%H%x00%P%x00%an%x00%ae%x00%ai%x00%cn%x00%ci%x00%s%x00%b%x00%D%x1E"
+        let format = "%H%x00%P%x00%an%x00%ae%x00%ai%x00%cn%x00%ce%x00%ci%x00%s%x00%b%x00%D%x1E"
         return try await run([
             "log", ref,
             "--format=\(format)",

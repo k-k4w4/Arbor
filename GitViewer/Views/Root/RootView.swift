@@ -21,6 +21,7 @@ struct RootView: View {
                 .navigationSplitViewStyle(.balanced)
             }
         }
+        .navigationTitle(appViewModel.windowTitle)
         .alert(
             "エラー",
             isPresented: Binding(
