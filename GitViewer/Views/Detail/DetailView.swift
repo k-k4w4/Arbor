@@ -59,18 +59,20 @@ struct DetailView: View {
 
     @ViewBuilder
     private func diffArea(vm: DetailViewModel) -> some View {
-        if vm.isLoadingDiff {
-            ProgressView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else if let error = vm.errorMessage, vm.diffHunks.isEmpty {
-            EmptyStateView(icon: "exclamationmark.triangle", message: error)
-        } else if vm.diffHunks.isEmpty {
-            EmptyStateView(icon: "doc.text", message: "差分がありません")
-        } else {
-            ScrollView {
-                UnifiedDiffView(hunks: vm.diffHunks)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+        ZStack {
+            if vm.isLoadingDiff {
+                ProgressView()
+            } else if let error = vm.errorMessage, vm.diffHunks.isEmpty {
+                EmptyStateView(icon: "exclamationmark.triangle", message: error)
+            } else if vm.diffHunks.isEmpty {
+                EmptyStateView(icon: "doc.text", message: "差分がありません")
+            } else {
+                ScrollView {
+                    UnifiedDiffView(hunks: vm.diffHunks)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
