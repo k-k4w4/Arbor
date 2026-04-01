@@ -46,7 +46,17 @@ final class SidebarViewModel {
             }
             stashes = allStashes
 
-            if selectedRef == nil {
+            // Validate and refresh the selected ref against the new list.
+            // If the branch was deleted/renamed fall back to HEAD.
+            // If it still exists, replace with the fresh instance (updated SHA/isHead).
+            let freshRefs = localBranches + remoteBranches + tags + stashes
+            if let current = selectedRef {
+                if let updated = freshRefs.first(where: { $0.name == current.name }) {
+                    selectedRef = updated
+                } else {
+                    selectedRef = localBranches.first { $0.isHead } ?? localBranches.first
+                }
+            } else {
                 selectedRef = localBranches.first { $0.isHead } ?? localBranches.first
             }
         } catch is CancellationError {

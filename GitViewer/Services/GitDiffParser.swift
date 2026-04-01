@@ -6,28 +6,39 @@ struct GitDiffParser {
         pattern: #"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@"#
     )
 
+    // Parses `git show --name-status -z` output where fields are NUL-separated.
+    // Format: STATUS\0PATH\0 or STATUS\0OLD\0NEW\0 for renames/copies.
+    // NUL separation avoids misparse of filenames containing tabs or newlines.
     static func parseNameStatus(_ output: String) -> [DiffFile] {
         var files: [DiffFile] = []
-        for line in output.components(separatedBy: "\n") {
-            let trimmed = line.trimmingCharacters(in: .whitespaces)
-            guard !trimmed.isEmpty else { continue }
-            let parts = trimmed.components(separatedBy: "\t")
-            guard parts.count >= 2 else { continue }
-            let code = parts[0]
+        var tokens = output.components(separatedBy: "\0")
+        // Trailing NUL produces an empty last token; strip it.
+        if tokens.last?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == true {
+            tokens.removeLast()
+        }
+        var i = 0
+        while i < tokens.count {
+            let code = tokens[i].trimmingCharacters(in: .whitespacesAndNewlines)
+            i += 1
+            guard !code.isEmpty else { continue }
 
             if code.hasPrefix("R") || code.hasPrefix("C") {
-                guard parts.count >= 3 else { continue }
-                let s: FileStatus = code.hasPrefix("R") ? .renamed : .copied
-                files.append(DiffFile(status: s, oldPath: parts[1], newPath: parts[2]))
+                guard i + 1 < tokens.count else { break }
+                let oldPath = tokens[i]; let newPath = tokens[i + 1]
+                i += 2
+                files.append(DiffFile(status: code.hasPrefix("R") ? .renamed : .copied,
+                                      oldPath: oldPath, newPath: newPath))
             } else if let s = status(from: code) {
-                files.append(DiffFile(status: s, newPath: parts[1]))
+                guard i < tokens.count else { break }
+                files.append(DiffFile(status: s, newPath: tokens[i]))
+                i += 1
             }
         }
         return files
     }
 
     static func parseDiffContent(_ output: String) -> [DiffHunk] {
-        let lines = output.components(separatedBy: "\n")
+        let lines = output.replacingOccurrences(of: "\r\n", with: "\n").components(separatedBy: "\n")
         var hunks: [DiffHunk] = []
         var pendingHunk: DiffHunk?
         var pendingLines: [DiffLine] = []
@@ -89,6 +100,8 @@ struct GitDiffParser {
         case "M": return .modified
         case "A": return .added
         case "D": return .deleted
+        case "T": return .typeChanged
+        case "U": return .unmerged
         default: return nil
         }
     }

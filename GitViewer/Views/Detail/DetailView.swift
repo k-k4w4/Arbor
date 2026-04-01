@@ -18,7 +18,11 @@ struct DetailView: View {
                     let commit = appViewModel.commitListVM?.selectedCommit,
                     let service = appViewModel.gitService,
                     let vm = appViewModel.detailVM
-                else { return }
+                else {
+                    // Selection cleared — reset detail pane so stale data doesn't linger.
+                    appViewModel.detailVM?.clear()
+                    return
+                }
                 vm.load(commit: commit, service: service)
             }
     }
@@ -32,6 +36,8 @@ struct DetailView: View {
                 if vm.isLoadingFiles {
                     ProgressView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if let error = vm.errorMessage, vm.changedFiles.isEmpty {
+                    EmptyStateView(icon: "exclamationmark.triangle", message: error)
                 } else if vm.changedFiles.isEmpty {
                     EmptyStateView(icon: "doc", message: "変更ファイルがありません")
                 } else {
@@ -54,6 +60,8 @@ struct DetailView: View {
         if vm.isLoadingDiff {
             ProgressView()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else if let error = vm.errorMessage, vm.diffHunks.isEmpty {
+            EmptyStateView(icon: "exclamationmark.triangle", message: error)
         } else if vm.diffHunks.isEmpty {
             EmptyStateView(icon: "doc.text", message: "差分がありません")
         } else {

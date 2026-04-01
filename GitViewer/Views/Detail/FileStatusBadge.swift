@@ -19,6 +19,8 @@ struct FileStatusBadge: View {
         case .deleted: return .gitViewerDeleted
         case .renamed: return .gitViewerRenamed
         case .copied: return .teal
+        case .typeChanged: return .orange
+        case .unmerged: return .red
         }
     }
 }

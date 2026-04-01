@@ -4,7 +4,6 @@ enum DiffLineType {
     case context
     case added
     case deleted
-    case hunkHeader
 }
 
 struct DiffLine: Identifiable {

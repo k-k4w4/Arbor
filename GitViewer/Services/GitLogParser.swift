@@ -25,17 +25,21 @@ struct GitLogParser {
         guard sha.count == 40, sha.allSatisfy({ $0.isHexDigit }) else { return nil }
 
         let parentSHAs = parts[1].split(separator: " ").map(String.init).filter { !$0.isEmpty }
-        let authorDate = dateFormatter.date(from: parts[4].trimmingCharacters(in: .whitespacesAndNewlines)) ?? Date()
-        let committerDate = dateFormatter.date(from: parts[6].trimmingCharacters(in: .whitespacesAndNewlines)) ?? Date()
+        let authorDate = dateFormatter.date(from: parts[4].trimmingCharacters(in: .whitespacesAndNewlines)) ?? Date.distantPast
+        let committerDate = dateFormatter.date(from: parts[6].trimmingCharacters(in: .whitespacesAndNewlines)) ?? Date.distantPast
         let body = parts[8].trimmingCharacters(in: .whitespacesAndNewlines)
-        let decoration = parts.count > 9 ? parts[9] : ""
+        // decoration (%D) is always the last NUL-separated token because it is the
+        // final field before the %x1E record separator.  When %b (body) contains NUL
+        // characters extra tokens appear, so using parts.last is more robust than parts[9].
+        guard parts.count >= 10 else { return nil }
+        let decoration = parts.last ?? ""
 
         return Commit(
             id: sha,
             shortSHA: String(sha.prefix(7)),
             parentSHAs: parentSHAs,
             subject: parts[7],
-            message: body.isEmpty ? parts[7] : body,
+            message: body.isEmpty ? parts[7] : parts[7] + "\n\n" + body,
             authorName: parts[2],
             authorEmail: parts[3],
             authorDate: authorDate,

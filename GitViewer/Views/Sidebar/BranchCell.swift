@@ -11,13 +11,14 @@ struct BranchCell: View {
                 .frame(width: 14)
             Text(ref.shortName)
                 .lineLimit(1)
+            Spacer()
             if ref.isHead {
-                Spacer()
                 Image(systemName: "checkmark")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
         }
+        .frame(maxWidth: .infinity)
         .listRowBackground(isSelected ? Color.accentColor.opacity(0.15) : Color.clear)
     }
 

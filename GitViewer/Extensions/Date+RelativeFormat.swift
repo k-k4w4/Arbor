@@ -3,6 +3,7 @@ import Foundation
 extension Date {
     private static let shortDateFormatter: DateFormatter = {
         let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
         f.dateFormat = "MMM d"
         return f
     }()

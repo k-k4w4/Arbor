@@ -11,9 +11,14 @@ final class AppViewModel {
     var detailVM: DetailViewModel?
     var errorMessage: String?
     private(set) var gitService: GitService?
+    private var refObserveGeneration = 0
 
     init() {
-        repositories = RepositoryStore.shared.load()
+        let result = RepositoryStore.shared.load()
+        repositories = result.repos
+        if let msg = result.error {
+            errorMessage = msg
+        }
         if let first = repositories.first {
             selectRepository(first)
         }
@@ -24,6 +29,8 @@ final class AppViewModel {
         let service = try GitService(repositoryURL: url)
         try await service.validateRepository()
         let headBranch = try await service.fetchHeadBranch()
+        // Re-check after awaits: another concurrent call may have added the same URL.
+        guard !repositories.contains(where: { $0.path == url }) else { return }
         var repo = Repository(path: url)
         repo.headBranchName = headBranch
         repositories.append(repo)
@@ -54,19 +61,46 @@ final class AppViewModel {
         sidebarVM?.cancelAll()
         commitListVM?.cancelAll()
         detailVM?.cancelAll()
-        selectedRepository = repo
+        // Create the service first; only update selectedRepository on success so
+        // the selection state stays consistent with the active git service.
+        let service: GitService
         do {
-            gitService = try GitService(repositoryURL: repo.path)
+            service = try GitService(repositoryURL: repo.path)
         } catch {
             errorMessage = error.localizedDescription
             return
         }
-        guard let service = gitService else { return }
+        selectedRepository = repo
+        gitService = service
         let sidebar = SidebarViewModel()
         sidebarVM = sidebar
         commitListVM = CommitListViewModel()
         detailVM = DetailViewModel()
         sidebar.scheduleLoad(service: service)
+        refObserveGeneration += 1
+        observeRefAndLoadCommits()
+    }
+
+    // Watch sidebarVM.selectedRef changes and trigger commit loading.
+    // Uses withObservationTracking so it works regardless of whether SwiftUI
+    // re-renders CommitListView in time (nested @Observable chains can miss updates).
+    private func observeRefAndLoadCommits() {
+        let gen = refObserveGeneration
+        withObservationTracking {
+            _ = self.sidebarVM?.selectedRef
+        } onChange: { [weak self] in
+            Task { @MainActor [weak self] in
+                guard let self, self.refObserveGeneration == gen else { return }
+                // Re-register before loading to minimize the window where a rapid
+                // branch switch could be missed between onChange firing and re-registration.
+                self.observeRefAndLoadCommits()
+                if let ref = self.sidebarVM?.selectedRef,
+                   let commitList = self.commitListVM,
+                   let service = self.gitService {
+                    commitList.loadInitial(ref: ref.gitRef, service: service)
+                }
+            }
+        }
     }
 
     func refresh() {

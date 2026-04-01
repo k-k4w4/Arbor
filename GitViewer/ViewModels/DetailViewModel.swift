@@ -22,6 +22,18 @@ final class DetailViewModel {
         diffTask?.cancel()
     }
 
+    func clear() {
+        fileTask?.cancel()
+        diffTask?.cancel()
+        commit = nil
+        changedFiles = []
+        selectedFile = nil
+        diffHunks = []
+        isLoadingFiles = false
+        isLoadingDiff = false
+        errorMessage = nil
+    }
+
     func load(commit: Commit, service: GitService) {
         fileTask?.cancel()
         diffTask?.cancel()
@@ -33,13 +45,10 @@ final class DetailViewModel {
         isLoadingFiles = true
         isLoadingDiff = false
         errorMessage = nil
-        fileTask = Task {
+        fileTask = Task { [weak self] in
             do {
                 let output = try await service.fetchDiff(commit: commit.id)
-                guard !Task.isCancelled else {
-                    self.isLoadingFiles = false
-                    return
-                }
+                guard let self, !Task.isCancelled else { return }
                 let files = GitDiffParser.parseNameStatus(output)
                 self.changedFiles = files
                 self.isLoadingFiles = false
@@ -47,10 +56,11 @@ final class DetailViewModel {
                     self.selectFile(first)
                 }
             } catch is CancellationError {
-                self.isLoadingFiles = false
+                // clear() or the next load() manages isLoadingFiles; don't overwrite here.
+                return
             } catch {
-                self.isLoadingFiles = false
-                self.errorMessage = error.localizedDescription
+                self?.isLoadingFiles = false
+                self?.errorMessage = error.localizedDescription
             }
         }
     }
@@ -61,20 +71,18 @@ final class DetailViewModel {
         selectedFile = file
         diffHunks = []
         isLoadingDiff = true
-        diffTask = Task {
+        diffTask = Task { [weak self] in
             do {
                 let output = try await service.fetchDiffContent(commit: commit.id, file: file.newPath)
-                guard !Task.isCancelled else {
-                    self.isLoadingDiff = false
-                    return
-                }
+                guard let self, !Task.isCancelled else { return }
                 self.diffHunks = GitDiffParser.parseDiffContent(output)
                 self.isLoadingDiff = false
             } catch is CancellationError {
-                self.isLoadingDiff = false
+                // clear() or the next selectFile() manages isLoadingDiff; don't overwrite here.
+                return
             } catch {
-                self.isLoadingDiff = false
-                self.errorMessage = error.localizedDescription
+                self?.isLoadingDiff = false
+                self?.errorMessage = error.localizedDescription
             }
         }
     }

@@ -4,8 +4,6 @@ import Observation
 @MainActor
 @Observable
 final class CommitListViewModel {
-    let instanceID = UUID()  // changes on every selectRepository, used as task(id:) key
-
     var commits: [Commit] = []
     var filteredCommits: [Commit] = []
     var selectedCommit: Commit?
@@ -42,6 +40,7 @@ final class CommitListViewModel {
 
     func loadMore() {
         guard !isLoading, hasMore, gitService != nil else { return }
+        loadTask?.cancel()
         isLoading = true
         loadTask = Task { await self.fetchPage() }
     }
@@ -56,10 +55,15 @@ final class CommitListViewModel {
         do {
             let output = try await service.fetchLog(ref: currentRef, limit: pageSize, offset: fetchOffset)
             var newCommits = GitLogParser.parse(output)
+            // Use raw record count (not parsed count) so fetchOffset stays aligned with git's
+            // --skip regardless of parse failures; prevents duplicates on subsequent pages.
+            let rawCount = output.components(separatedBy: "\u{1E}").filter {
+                !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            }.count
             GraphLayoutEngine.compute(commits: &newCommits, activeLanes: &graphActiveLanes)
             commits.append(contentsOf: newCommits)
-            fetchOffset += newCommits.count
-            hasMore = newCommits.count == pageSize
+            fetchOffset += rawCount
+            hasMore = rawCount == pageSize
             applyFilter()
             isLoading = false
         } catch is CancellationError {

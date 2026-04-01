@@ -1,34 +1,11 @@
 import SwiftUI
 import AppKit
 
-private struct CommitTaskKey: Equatable {
-    let vmInstanceID: UUID
-    let selectedRef: GitRef?
-}
-
-// Sentinel used when commitListVM is nil so task(id:) doesn't re-fire on every body evaluation
-private let noVMSentinel = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
-
 struct CommitListView: View {
     @Environment(AppViewModel.self) private var appViewModel
 
-    private var taskKey: CommitTaskKey {
-        CommitTaskKey(
-            vmInstanceID: appViewModel.commitListVM?.instanceID ?? noVMSentinel,
-            selectedRef: appViewModel.sidebarVM?.selectedRef
-        )
-    }
-
     var body: some View {
         contentView
-            .task(id: taskKey) {
-                guard
-                    let ref = appViewModel.sidebarVM?.selectedRef,
-                    let service = appViewModel.gitService,
-                    let vm = appViewModel.commitListVM
-                else { return }
-                vm.loadInitial(ref: ref.gitRef, service: service)
-            }
             .toolbar {
                 ToolbarItem(placement: .navigation) {
                     if let ref = appViewModel.sidebarVM?.selectedRef {
@@ -60,7 +37,9 @@ struct CommitListView: View {
     @ViewBuilder
     private func commitList(vm: CommitListViewModel) -> some View {
         VStack(spacing: 0) {
-            if vm.filteredCommits.isEmpty && !vm.isLoading {
+            if let error = vm.errorMessage, vm.filteredCommits.isEmpty && !vm.isLoading {
+                EmptyStateView(icon: "exclamationmark.triangle", message: error)
+            } else if vm.filteredCommits.isEmpty && !vm.isLoading {
                 EmptyStateView(
                     icon: "clock.arrow.circlepath",
                     message: vm.searchQuery.isEmpty ? "コミットがありません" : "一致するコミットがありません"
@@ -86,7 +65,9 @@ struct CommitListView: View {
                             }
                         }
                         .onAppear {
-                            if commit.id == vm.filteredCommits.last?.id {
+                            // Only page-load when not searching; filtered results reach
+                            // the bottom quickly and would trigger unbounded loading.
+                            if commit.id == vm.filteredCommits.last?.id && vm.searchQuery.isEmpty {
                                 vm.loadMore()
                             }
                         }

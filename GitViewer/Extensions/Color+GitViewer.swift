@@ -3,7 +3,6 @@ import SwiftUI
 extension Color {
     // Semantic colors for refs
     static let gitViewerBranch = Color.accentColor
-    static let gitViewerRemote = Color.secondary
     static let gitViewerTag = Color.orange
     static let gitViewerAdded = Color.green
     static let gitViewerDeleted = Color.red
