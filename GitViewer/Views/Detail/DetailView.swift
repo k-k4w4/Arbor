@@ -41,10 +41,12 @@ struct DetailView: View {
                 } else if vm.changedFiles.isEmpty {
                     EmptyStateView(icon: "doc", message: "変更ファイルがありません")
                 } else {
-                    ChangedFilesList(files: vm.changedFiles)
-                        .frame(maxHeight: 160)
-                    Divider()
-                    diffArea(vm: vm)
+                    VSplitView {
+                        ChangedFilesList(files: vm.changedFiles)
+                            .frame(minHeight: 60, idealHeight: 160)
+                        diffArea(vm: vm)
+                            .frame(minHeight: 80)
+                    }
                 }
             }
         } else {
@@ -65,8 +67,8 @@ struct DetailView: View {
         } else if vm.diffHunks.isEmpty {
             EmptyStateView(icon: "doc.text", message: "差分がありません")
         } else {
-            ScrollView(.vertical) {
-                UnifiedDiffView(hunks: vm.diffHunks, wrapLines: vm.wrapLines)
+            ScrollView {
+                UnifiedDiffView(hunks: vm.diffHunks)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }

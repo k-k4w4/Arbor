@@ -11,7 +11,6 @@ final class DetailViewModel {
     var isLoadingFiles: Bool = false
     var isLoadingDiff: Bool = false
     var errorMessage: String?
-    var wrapLines: Bool = false
 
     private var gitService: GitService?
     private var fileTask: Task<Void, Never>?

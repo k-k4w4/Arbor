@@ -45,6 +45,7 @@
 		C12371B374219092AC8926C4 /* DetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C91467E505BC8E5EC016BEE /* DetailViewModel.swift */; };
 		C72652616C1ECA5DA21EFE9B /* DiffFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D5448DB46DF98C75D7E8B23 /* DiffFile.swift */; };
 		CEEFFD635F96B3FE9D69BF46 /* CommitGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 602798EC39D6AAF92953B040 /* CommitGraphView.swift */; };
+		D82D07422DAFBCF6C7B99238 /* ExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6943F08D3AF7D8187BE21127 /* ExtensionTests.swift */; };
 		DF1611244509D1EAA695092B /* GitLogParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B2CD2AD09C95F40ACCF987 /* GitLogParser.swift */; };
 		E0ED0C3CABDB956605561F9F /* RepositoryListSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2585050D59A1E77D4758914 /* RepositoryListSection.swift */; };
 		FC5AA4565239F6CDC24EA9C9 /* AppViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19146233A3079ABC93BE6F1E /* AppViewModel.swift */; };
@@ -79,6 +80,7 @@
 		50CA10046BB17CF4EF730168 /* CommitListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommitListView.swift; sourceTree = "<group>"; };
 		5B77E00596C304F9ED44B134 /* Color+GitViewer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+GitViewer.swift"; sourceTree = "<group>"; };
 		602798EC39D6AAF92953B040 /* CommitGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommitGraphView.swift; sourceTree = "<group>"; };
+		6943F08D3AF7D8187BE21127 /* ExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionTests.swift; sourceTree = "<group>"; };
 		6CBBDE6BCDDB6FEFFD46D1AC /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		76A34D64ECDE0D95559B4157 /* GraphLayoutEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphLayoutEngine.swift; sourceTree = "<group>"; };
 		7A02AC2C6D587448DD2B34D3 /* CommitGraph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommitGraph.swift; sourceTree = "<group>"; };
@@ -157,6 +159,7 @@
 		44F1BB9056C6DC84ECD8EEFC /* GitViewerTests */ = {
 			isa = PBXGroup;
 			children = (
+				6943F08D3AF7D8187BE21127 /* ExtensionTests.swift */,
 				E87FA5402916FF5A30CE648E /* GitDiffParserTests.swift */,
 				2462DCA4C06E8DF8F930CC76 /* GitLogParserTests.swift */,
 				FE03C0F4D017C8F8FD820802 /* GraphLayoutEngineTests.swift */,
@@ -412,6 +415,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D82D07422DAFBCF6C7B99238 /* ExtensionTests.swift in Sources */,
 				B1CF46921C824D6651A00D4E /* GitDiffParserTests.swift in Sources */,
 				82AFA659B51C927B80744FA7 /* GitLogParserTests.swift in Sources */,
 				34C0E77A24B1B2438C5E72D1 /* GraphLayoutEngineTests.swift in Sources */,
@@ -455,6 +459,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -473,6 +478,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",

@@ -2,7 +2,6 @@ import SwiftUI
 
 struct UnifiedDiffView: View {
     let hunks: [DiffHunk]
-    var wrapLines: Bool = false
 
     var body: some View {
         LazyVStack(spacing: 0) {
@@ -20,7 +19,6 @@ struct UnifiedDiffView: View {
     private func hunkHeaderRow(_ hunk: DiffHunk) -> some View {
         Text(hunk.header)
             .foregroundStyle(.secondary)
-            .lineLimit(1)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 8)
             .padding(.vertical, 3)
@@ -36,8 +34,6 @@ struct UnifiedDiffView: View {
                 .frame(width: 14, alignment: .center)
                 .foregroundStyle(prefixColor(line.type))
             Text(line.content)
-                .lineLimit(wrapLines ? nil : 1)
-                .truncationMode(.tail)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.vertical, 1)

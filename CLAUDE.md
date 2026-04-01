@@ -82,16 +82,42 @@ GitViewer/
 | hunk ヘッダ背景 | `diffHunk` |
 | グラフノード | `Color.graphColor(forLane:)` (10色パレット) |
 
-## v1 スコープ（実装完了）
+## 実装済み機能
 
+### v1（Phase 1〜6）
 - リポジトリ追加（ドロップ/ダイアログ）
 - サイドバー: ブランチ/リモート/タグ/スタッシュ一覧
-- コミットリスト: グラフ付き、ページネーション、検索、↑↓ナビ
+- コミットリスト: グラフ付き、ページネーション（200件/page）、検索、↑↓ナビ
 - コミット詳細: ファイル一覧 + unified diff
 - ツールバー: ブランチ名ラベル + ⌘R リフレッシュ
 - コンテキストメニュー: SHA コピー、Finder で表示
 - 起動時に最初のリポジトリを自動選択
 
-## 将来拡張（v1 スコープ外）
+### v2（Phase 7〜）
+- **Phase 7 完了**: リポジトリ管理改善
+  - サイドバー内「リポジトリを追加」行（フォルダ選択）
+  - リポジトリ行の右クリック削除
+  - パス不在時の警告アイコン表示（`RepositoryCell`）
+- **Phase 8 完了**: Diff表示改善
+  - `ChangedFilesList` の高さ固定（160pt）廃止 → `VSplitView` でリサイズ可能に
+  - diff 行を常時折り返し表示（`wrapLines` 固定、トグルなし）
 
-構文ハイライト、Gravatar、Split diff、ファイルツリービュー、Quick Look、Preferences 画面、URL Bookmark による sandbox 対応
+## テスト
+
+`GitViewerTests/` に 81 件のユニットテスト（2026-04-01 時点）。
+対象: `GitLogParser`, `GitDiffParser`, `GraphLayoutEngine`, `Date+RelativeFormat`, `String+SHA`
+
+実行: `xcodebuild -scheme GitViewer -destination 'platform=macOS' test`
+
+## 将来拡張（ロードマップ）
+
+詳細は memory の `project_roadmap.md` を参照。概要：
+- Phase 8.5: UI修正（ウィンドウ再オープン・diff枠サイズ固定）【High】
+- Phase 9: 検索改善（全履歴 grep・日時切り替え）【High】
+- Phase 10: 情報表示充実（ahead/behind・committer表示）【Medium】
+- Phase 11: Preferences 画面【Medium】
+- Phase 12: サイドバーブランチ/タグページング【Medium】
+- Phase 13: ローカル差分（未コミット変更）表示【Medium】
+- Phase 14: 構文ハイライト・Gravatar・Split diff・ファイルツリー・Quick Look【Low】
+- Phase 15: ブランチ間比較・マルチウィンドウ【Low】
+- Phase 16: セクション省略/全表示トグル【Low】
