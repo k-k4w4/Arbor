@@ -12,6 +12,11 @@ final class SidebarViewModel {
     var isLoading: Bool = false
     var errorMessage: String?
 
+    static let pageSize = 50
+    var localBranchesLimit: Int = pageSize
+    var remoteBranchesLimit: Int = pageSize
+    var tagsLimit: Int = pageSize
+
     private var loadTask: Task<Void, Never>?
     private var loadGeneration: Int = 0
 
@@ -31,6 +36,9 @@ final class SidebarViewModel {
     private func load(service: GitService, gen: Int) async {
         isLoading = true
         errorMessage = nil
+        localBranchesLimit = Self.pageSize
+        remoteBranchesLimit = Self.pageSize
+        tagsLimit = Self.pageSize
         defer {
             // Only clear the spinner for the generation that set it.
             if loadGeneration == gen { isLoading = false }
