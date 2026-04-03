@@ -29,17 +29,16 @@ struct GitRef: Identifiable, Hashable {
         self.behind = behind
     }
 
-    // Ref string suitable for passing to git log
-    var gitRef: String {
+    var toolbarIcon: String {
         switch refType {
-        case .localBranch:
-            return shortName
-        case .remoteBranch(let remote):
-            return "\(remote)/\(shortName)"
-        case .tag:
-            return shortName
-        case .stash:
-            return name  // "stash@{0}"
+        case .localBranch:  return "arrow.triangle.branch"
+        case .remoteBranch: return "cloud"
+        case .tag:          return "tag"
+        case .stash:        return "archivebox"
         }
     }
+
+    // Fully-qualified ref string for git commands.
+    // Using the full name avoids ambiguity when a tag and a branch share the same shortName.
+    var gitRef: String { name }
 }

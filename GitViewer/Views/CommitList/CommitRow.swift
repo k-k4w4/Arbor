@@ -3,15 +3,6 @@ import SwiftUI
 struct CommitRow: View {
     let commit: Commit
     let showAbsoluteDates: Bool
-    @State private var isBodyExpanded = false
-
-    private var commitBody: String? {
-        let separator = commit.subject + "\n\n"
-        guard commit.message.hasPrefix(separator) else { return nil }
-        let body = String(commit.message.dropFirst(separator.count))
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        return body.isEmpty ? nil : body
-    }
 
     private var dateText: String {
         showAbsoluteDates ? commit.authorDate.absoluteDisplay : commit.authorDate.relativeDisplay
@@ -54,20 +45,6 @@ struct CommitRow: View {
                 Text(commit.subject)
                     .font(.body)
                     .lineLimit(2)
-                if let body = commitBody {
-                    if isBodyExpanded {
-                        Text(body)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .textSelection(.enabled)
-                    }
-                    Button(isBodyExpanded ? "閉じる" : "もっと見る") {
-                        isBodyExpanded.toggle()
-                    }
-                    .font(.caption)
-                    .buttonStyle(.plain)
-                    .foregroundStyle(Color.accentColor)
-                }
                 HStack(spacing: 8) {
                     Text(commit.authorName)
                         .font(.caption)

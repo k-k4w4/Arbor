@@ -2,7 +2,6 @@ import SwiftUI
 
 struct RepositoryCell: View {
     let repository: Repository
-    let isSelected: Bool
 
     @State private var pathExists = true
 

@@ -7,7 +7,8 @@ final class GitLogParserTests: XCTestCase {
     private let shaB = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
     private let shaC = "cccccccccccccccccccccccccccccccccccccccc"
 
-    // Build a NUL-separated record followed by the RS separator.
+    // Build a NUL-separated record terminated by NUL+RS (\x00\x1E).
+    // Body (%b) is omitted from the format — loaded lazily via fetchCommitBody.
     private func record(
         sha: String,
         parents: String = "",
@@ -18,10 +19,9 @@ final class GitLogParserTests: XCTestCase {
         committerEmail: String = "alice@example.com",
         committerDate: String = "2025-01-15 10:30:00 +0000",
         subject: String = "Test commit",
-        body: String = "",
         decoration: String = ""
     ) -> String {
-        "\(sha)\0\(parents)\0\(authorName)\0\(authorEmail)\0\(authorDate)\0\(committerName)\0\(committerEmail)\0\(committerDate)\0\(subject)\0\(body)\0\(decoration)\u{1E}"
+        "\(sha)\0\(parents)\0\(authorName)\0\(authorEmail)\0\(authorDate)\0\(committerName)\0\(committerEmail)\0\(committerDate)\0\(subject)\0\(decoration)\0\u{1E}"
     }
 
     // MARK: - Basic parsing
@@ -99,22 +99,17 @@ final class GitLogParserTests: XCTestCase {
         XCTAssertEqual(commits[0].parentSHAs, [shaB, shaC])
     }
 
-    // MARK: - Message body
+    // MARK: - Message
 
-    func testParseEmptyBodyUsesSubjectAsMessage() {
-        let commits = GitLogParser.parse(record(sha: shaA, subject: "Subject only", body: ""))
+    func testParseSubjectAsMessage() {
+        let commits = GitLogParser.parse(record(sha: shaA, subject: "Subject only"))
         XCTAssertEqual(commits[0].message, "Subject only")
-    }
-
-    func testParseBodyCombinedWithSubject() {
-        let commits = GitLogParser.parse(record(sha: shaA, subject: "Subject", body: "Detailed body"))
-        XCTAssertEqual(commits[0].message, "Subject\n\nDetailed body")
     }
 
     // MARK: - SHA validation
 
     func testInvalidSHATooShortIsSkipped() {
-        let input = "abc123\0\0Author\0email\02025-01-15 10:30:00 +0000\0Author\02025-01-15 10:30:00 +0000\0Subject\0\0\u{1E}"
+        let input = "abc123\0\0Author\0email\02025-01-15 10:30:00 +0000\0Author\0email\02025-01-15 10:30:00 +0000\0Subject\0\u{1E}"
         XCTAssertTrue(GitLogParser.parse(input).isEmpty)
     }
 
@@ -125,19 +120,19 @@ final class GitLogParserTests: XCTestCase {
     }
 
     func testTooFewFieldsIsSkipped() {
-        // Only 5 NUL-separated fields — first guard requires >= 9
-        let input = "\(shaA)\0parents\0author\0email\0date\u{1E}"
+        // Only 5 NUL-separated fields — guard requires >= 10
+        let input = "\(shaA)\0parents\0author\0email\0date\0\u{1E}"
         XCTAssertTrue(GitLogParser.parse(input).isEmpty)
     }
 
     func testNineFieldsMissingDecorationIsSkipped() {
-        // 9 fields passes the first guard (>= 9) but fails the second (>= 10, needs decoration field)
-        let input = "\(shaA)\0\0Author\0email\02025-01-15 10:30:00 +0000\0Author\02025-01-15 10:30:00 +0000\0Subject\0Body\u{1E}"
+        // 9 fields (sha…subject) without decoration fails the >= 10 guard
+        let input = "\(shaA)\0\0Author\0email\02025-01-15 10:30:00 +0000\0Author\0email\02025-01-15 10:30:00 +0000\0Subject\0\u{1E}"
         XCTAssertTrue(GitLogParser.parse(input).isEmpty)
     }
 
     func testInvalidCommitDoesNotAffectOthers() {
-        let invalid = "bad\0\0A\0e\02025-01-15 10:30:00 +0000\0A\02025-01-15 10:30:00 +0000\0S\0\0\u{1E}"
+        let invalid = "bad\0\0A\0e\02025-01-15 10:30:00 +0000\0A\0e\02025-01-15 10:30:00 +0000\0S\0\u{1E}"
         let input = record(sha: shaA) + invalid + record(sha: shaB)
         let commits = GitLogParser.parse(input)
         XCTAssertEqual(commits.count, 2)
@@ -153,7 +148,7 @@ final class GitLogParserTests: XCTestCase {
     }
 
     func testDecorationHeadBranch() {
-        let commits = GitLogParser.parse(record(sha: shaA, decoration: "HEAD -> main"))
+        let commits = GitLogParser.parse(record(sha: shaA, decoration: "HEAD -> refs/heads/main"))
         XCTAssertEqual(commits[0].refs.count, 1)
         let ref = commits[0].refs[0]
         XCTAssertEqual(ref.shortName, "main")
@@ -168,7 +163,7 @@ final class GitLogParserTests: XCTestCase {
     }
 
     func testDecorationTag() {
-        let commits = GitLogParser.parse(record(sha: shaA, decoration: "tag: v1.0.0"))
+        let commits = GitLogParser.parse(record(sha: shaA, decoration: "tag: refs/tags/v1.0.0"))
         XCTAssertEqual(commits[0].refs.count, 1)
         let ref = commits[0].refs[0]
         XCTAssertEqual(ref.shortName, "v1.0.0")
@@ -177,7 +172,7 @@ final class GitLogParserTests: XCTestCase {
     }
 
     func testDecorationRemoteBranch() {
-        let commits = GitLogParser.parse(record(sha: shaA, decoration: "origin/main"))
+        let commits = GitLogParser.parse(record(sha: shaA, decoration: "refs/remotes/origin/main"))
         XCTAssertEqual(commits[0].refs.count, 1)
         let ref = commits[0].refs[0]
         XCTAssertEqual(ref.shortName, "main")
@@ -185,7 +180,7 @@ final class GitLogParserTests: XCTestCase {
     }
 
     func testDecorationLocalBranchNoSlash() {
-        let commits = GitLogParser.parse(record(sha: shaA, decoration: "develop"))
+        let commits = GitLogParser.parse(record(sha: shaA, decoration: "refs/heads/develop"))
         XCTAssertEqual(commits[0].refs.count, 1)
         let ref = commits[0].refs[0]
         XCTAssertEqual(ref.shortName, "develop")
@@ -193,12 +188,29 @@ final class GitLogParserTests: XCTestCase {
         XCTAssertFalse(ref.isHead)
     }
 
+    func testDecorationLocalBranchWithSlash() {
+        let commits = GitLogParser.parse(record(sha: shaA, decoration: "refs/heads/feature/foo"))
+        XCTAssertEqual(commits[0].refs.count, 1)
+        let ref = commits[0].refs[0]
+        XCTAssertEqual(ref.shortName, "feature/foo")
+        XCTAssertEqual(ref.refType, .localBranch)
+        XCTAssertEqual(ref.name, "refs/heads/feature/foo")
+    }
+
     func testDecorationMultipleRefs() {
-        let commits = GitLogParser.parse(record(sha: shaA, decoration: "HEAD -> main, origin/main, tag: v1.0"))
+        let commits = GitLogParser.parse(record(sha: shaA, decoration: "HEAD -> refs/heads/main, refs/remotes/origin/main, tag: refs/tags/v1.0"))
         XCTAssertEqual(commits[0].refs.count, 3)
         XCTAssertTrue(commits[0].refs[0].isHead)
         XCTAssertEqual(commits[0].refs[0].shortName, "main")
         XCTAssertEqual(commits[0].refs[1].refType, .remoteBranch(remote: "origin"))
         XCTAssertEqual(commits[0].refs[2].refType, .tag)
+    }
+
+    func testDecorationRemoteSymbolicHEADIsIgnored() {
+        // refs/remotes/origin/HEAD -> refs/remotes/origin/main should not produce a badge
+        let commits = GitLogParser.parse(record(sha: shaA, decoration: "refs/remotes/origin/HEAD -> refs/remotes/origin/main, refs/remotes/origin/main"))
+        XCTAssertEqual(commits[0].refs.count, 1)
+        XCTAssertEqual(commits[0].refs[0].shortName, "main")
+        XCTAssertEqual(commits[0].refs[0].refType, .remoteBranch(remote: "origin"))
     }
 }

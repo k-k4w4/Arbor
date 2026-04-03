@@ -27,24 +27,34 @@ struct UnifiedDiffView: View {
 
     @ViewBuilder
     private func diffLineRow(_ line: DiffLine) -> some View {
-        HStack(spacing: 0) {
-            lineNumberCell(line.oldLineNumber)
-            lineNumberCell(line.newLineNumber)
-            Text(linePrefix(line.type))
-                .frame(width: 14, alignment: .center)
-                .foregroundStyle(prefixColor(line.type))
+        if line.type == .noNewline {
             Text(line.content)
+                .foregroundStyle(.secondary)
+                .italic()
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 1)
+        } else {
+            HStack(spacing: 0) {
+                lineNumberCell(line.oldLineNumber)
+                lineNumberCell(line.newLineNumber)
+                Text(linePrefix(line.type))
+                    .frame(width: 14, alignment: .center)
+                    .foregroundStyle(prefixColor(line.type))
+                Text(line.content)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(.vertical, 1)
+            .background(lineBackground(line.type))
+            .accessibilityLabel(diffLineAccessibilityLabel(line))
         }
-        .padding(.vertical, 1)
-        .background(lineBackground(line.type))
-        .accessibilityLabel(diffLineAccessibilityLabel(line))
     }
 
     private func diffLineAccessibilityLabel(_ line: DiffLine) -> String {
         switch line.type {
         case .added:   return "追加: \(line.content)"
         case .deleted: return "削除: \(line.content)"
+        case .noNewline: return line.content
         default:       return line.content
         }
     }

@@ -16,7 +16,8 @@ final class AppViewModel {
         guard let repo = selectedRepository else { return "GitViewer" }
         let repoName = repo.path.lastPathComponent
         guard let ref = sidebarVM?.selectedRef else { return repoName }
-        return "\(repoName) — \(ref.gitRef)"
+        // Use shortName ("main") not gitRef ("refs/heads/main") for display.
+        return "\(repoName) — \(ref.shortName)"
     }
     private(set) var gitService: GitService?
     private var refObserveGeneration = 0
@@ -33,13 +34,16 @@ final class AppViewModel {
     }
 
     func addRepository(at url: URL) async throws {
-        guard !repositories.contains(where: { $0.path == url }) else { return }
-        let service = try GitService(repositoryURL: url)
+        // Normalize to resolve symlinks and remove ".." so the same repo added via
+        // different path representations is detected as a duplicate.
+        let normalized = url.standardizedFileURL.resolvingSymlinksInPath()
+        guard !repositories.contains(where: { $0.path.standardizedFileURL.resolvingSymlinksInPath() == normalized }) else { return }
+        let service = try GitService(repositoryURL: normalized)
         try await service.validateRepository()
         let headBranch = try await service.fetchHeadBranch()
         // Re-check after awaits: another concurrent call may have added the same URL.
-        guard !repositories.contains(where: { $0.path == url }) else { return }
-        var repo = Repository(path: url)
+        guard !repositories.contains(where: { $0.path.standardizedFileURL.resolvingSymlinksInPath() == normalized }) else { return }
+        var repo = Repository(path: normalized)
         repo.headBranchName = headBranch
         repositories.append(repo)
         RepositoryStore.shared.save(repositories)
@@ -51,26 +55,25 @@ final class AppViewModel {
     func removeRepository(_ repo: Repository) {
         repositories.removeAll { $0.id == repo.id }
         RepositoryStore.shared.save(repositories)
-        if selectedRepository?.id == repo.id {
-            if let first = repositories.first {
-                selectRepository(first)
-            } else {
-                selectedRepository = nil
-                sidebarVM = nil
-                commitListVM = nil
-                detailVM = nil
-                gitService = nil
-            }
+        guard selectedRepository?.id == repo.id else { return }
+        // Clear state first so if selectRepository fails (GitService init error),
+        // the UI shows an empty/reset state rather than stale data for the deleted repo.
+        sidebarVM?.cancelAll()
+        commitListVM?.cancelAll()
+        detailVM?.cancelAll()
+        selectedRepository = nil
+        sidebarVM = nil
+        commitListVM = nil
+        detailVM = nil
+        gitService = nil
+        if let first = repositories.first {
+            selectRepository(first)
         }
     }
 
     func selectRepository(_ repo: Repository) {
-        // Cancel all in-flight tasks on old VMs before replacing them
-        sidebarVM?.cancelAll()
-        commitListVM?.cancelAll()
-        detailVM?.cancelAll()
-        // Create the service first; only update selectedRepository on success so
-        // the selection state stays consistent with the active git service.
+        // Create the service first; only update state on success so the selection
+        // remains consistent with the active git service.
         let service: GitService
         do {
             service = try GitService(repositoryURL: repo.path)
@@ -78,6 +81,11 @@ final class AppViewModel {
             errorMessage = error.localizedDescription
             return
         }
+        // Cancel in-flight tasks only after the new service is confirmed ready,
+        // so a failed init doesn't leave the UI in a stopped-but-unchanged state.
+        sidebarVM?.cancelAll()
+        commitListVM?.cancelAll()
+        detailVM?.cancelAll()
         selectedRepository = repo
         gitService = service
         let sidebar = SidebarViewModel()
@@ -104,7 +112,8 @@ final class AppViewModel {
                 self.observeRefAndLoadCommits()
                 if let ref = self.sidebarVM?.selectedRef,
                    let commitList = self.commitListVM,
-                   let service = self.gitService {
+                   let service = self.gitService,
+                   ref.gitRef != commitList.currentRef {
                     commitList.loadInitial(ref: ref.gitRef, service: service)
                 }
             }

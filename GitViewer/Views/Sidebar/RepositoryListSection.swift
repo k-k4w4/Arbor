@@ -11,7 +11,7 @@ struct RepositoryListSection: View {
         Section {
             ForEach(appViewModel.repositories) { repo in
                 let isSelected = appViewModel.selectedRepository?.id == repo.id
-                RepositoryCell(repository: repo, isSelected: isSelected)
+                RepositoryCell(repository: repo)
                     .padding(rowInsets)
                     .contentShape(Rectangle())
                     .onTapGesture {
@@ -54,7 +54,7 @@ struct RepositoryListSection: View {
         panel.allowsMultipleSelection = false
         panel.message = "Gitリポジトリのフォルダを選択してください"
         guard panel.runModal() == .OK, let url = panel.url else { return }
-        Task {
+        Task { @MainActor in
             do {
                 try await appViewModel.addRepository(at: url)
             } catch {

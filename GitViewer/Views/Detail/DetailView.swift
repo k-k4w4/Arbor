@@ -1,6 +1,7 @@
 import SwiftUI
 
 private struct DetailTaskKey: Equatable {
+    let repositoryID: UUID?
     let commitID: String?
 }
 
@@ -8,7 +9,10 @@ struct DetailView: View {
     @Environment(AppViewModel.self) private var appViewModel
 
     private var taskKey: DetailTaskKey {
-        DetailTaskKey(commitID: appViewModel.commitListVM?.selectedCommit?.id)
+        DetailTaskKey(
+            repositoryID: appViewModel.selectedRepository?.id,
+            commitID: appViewModel.commitListVM?.selectedCommit?.id
+        )
     }
 
     var body: some View {
@@ -31,7 +35,7 @@ struct DetailView: View {
     private var contentView: some View {
         if let vm = appViewModel.detailVM, let commit = vm.commit {
             VStack(spacing: 0) {
-                CommitInfoHeader(commit: commit)
+                CommitInfoHeader(commit: commit, commitBody: vm.commitBody, showAbsoluteDates: appViewModel.showAbsoluteDates)
                 Divider()
                 if vm.isLoadingFiles {
                     ProgressView()

@@ -15,14 +15,17 @@ extension Date {
         return f
     }()
 
-    var absoluteDisplay: String {
+    @MainActor var absoluteDisplay: String {
         Self.absoluteFormatter.string(from: self)
     }
 
-    var relativeDisplay: String {
+    @MainActor var relativeDisplay: String {
         let now = Date()
         let interval = now.timeIntervalSince(self)
 
+        if interval < 0 {
+            return absoluteDisplay
+        }
         if interval < 60 {
             return "just now"
         } else if interval < 3600 {

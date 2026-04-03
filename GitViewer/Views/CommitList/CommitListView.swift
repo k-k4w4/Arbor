@@ -9,7 +9,7 @@ struct CommitListView: View {
             .toolbar {
                 ToolbarItem(placement: .navigation) {
                     if let ref = appViewModel.sidebarVM?.selectedRef {
-                        Label(ref.shortName, systemImage: "arrow.triangle.branch")
+                        Label(ref.shortName, systemImage: ref.toolbarIcon)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

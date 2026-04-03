@@ -1,6 +1,7 @@
 import XCTest
 @testable import GitViewer
 
+@MainActor
 final class DateRelativeFormatTests: XCTestCase {
 
     private func dateSecondsAgo(_ seconds: TimeInterval) -> Date {
@@ -59,6 +60,12 @@ final class DateRelativeFormatTests: XCTestCase {
         XCTAssertFalse(display == "yesterday")
         // Should be a non-empty date string (e.g., "Mar 24")
         XCTAssertFalse(display.isEmpty)
+    }
+
+    func testFutureDateFallsBackToAbsolute() {
+        // Clocks can be skewed; a future date should show absolute rather than "just now"
+        let future = Date().addingTimeInterval(3600)
+        XCTAssertEqual(future.relativeDisplay, future.absoluteDisplay)
     }
 }
 

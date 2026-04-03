@@ -49,7 +49,7 @@ struct WelcomeView: View {
 
     private func addRepository(at url: URL) {
         errorMessage = nil
-        Task {
+        Task { @MainActor in
             do {
                 try await appViewModel.addRepository(at: url)
             } catch {

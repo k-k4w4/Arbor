@@ -11,18 +11,23 @@ enum FileStatus: String, Hashable {
 }
 
 struct DiffFile: Identifiable {
-    let id: UUID
+    let id: String
     var status: FileStatus
     var oldPath: String?
     var newPath: String
+    var rawNewPath: Data    // original bytes for passing to git commands
+    var rawOldPath: Data?
     var hunks: [DiffHunk]
     var isBinary: Bool
 
-    init(status: FileStatus, oldPath: String? = nil, newPath: String, isBinary: Bool = false) {
-        self.id = UUID()
+    init(status: FileStatus, oldPath: String? = nil, newPath: String,
+         rawOldPath: Data? = nil, rawNewPath: Data, isBinary: Bool = false) {
+        self.id = "\(status.rawValue):\(oldPath ?? ""):\(newPath)"
         self.status = status
         self.oldPath = oldPath
         self.newPath = newPath
+        self.rawNewPath = rawNewPath
+        self.rawOldPath = rawOldPath
         self.hunks = []
         self.isBinary = isBinary
     }

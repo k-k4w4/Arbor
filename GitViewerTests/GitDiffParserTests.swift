@@ -38,6 +38,21 @@ final class GitDiffParserTests: XCTestCase {
         XCTAssertEqual(files[0].status, .unmerged)
     }
 
+    func testParseNameStatusTwoCharUnmerged() {
+        // git outputs UU/AA/DU etc. for unmerged entries in octopus merges
+        let files = GitDiffParser.parseNameStatus("UU\0conflict.txt\0")
+        XCTAssertEqual(files.count, 1)
+        XCTAssertEqual(files[0].status, .unmerged)
+        XCTAssertEqual(files[0].newPath, "conflict.txt")
+    }
+
+    func testParseNameStatusTwoCharAdded() {
+        // AA = added by both sides (conflict); all two-char codes are unresolved conflicts → .unmerged
+        let files = GitDiffParser.parseNameStatus("AA\0both_added.txt\0")
+        XCTAssertEqual(files.count, 1)
+        XCTAssertEqual(files[0].status, .unmerged)
+    }
+
     func testParseNameStatusRenamed() {
         let files = GitDiffParser.parseNameStatus("R100\0old/path.swift\0new/path.swift\0")
         XCTAssertEqual(files.count, 1)
@@ -73,6 +88,22 @@ final class GitDiffParserTests: XCTestCase {
     func testParseNameStatusFilenameWithNewline() {
         let files = GitDiffParser.parseNameStatus("A\0weird\nname.txt\0")
         XCTAssertEqual(files[0].newPath, "weird\nname.txt")
+    }
+
+    func testParseNameStatusRawBytesPreservedForLatin1Path() {
+        // Simulate a Latin-1-encoded path: "été.txt" in Latin-1 is [0xE9, 0x74, 0xE9, 0x2E, 0x74, 0x78, 0x74]
+        // These bytes are NOT valid UTF-8 (0xE9 is not a valid UTF-8 start/continuation here).
+        let statusBytes: [UInt8] = [0x4D]       // "M"
+        let nul: [UInt8] = [0x00]
+        let pathBytes: [UInt8] = [0xE9, 0x74, 0xE9, 0x2E, 0x74, 0x78, 0x74]  // "été.txt" in Latin-1
+        let input = Data(statusBytes + nul + pathBytes + nul)
+        let files = GitDiffParser.parseNameStatus(input)
+        XCTAssertEqual(files.count, 1)
+        XCTAssertEqual(files[0].status, .modified)
+        // rawNewPath must preserve the original bytes exactly
+        XCTAssertEqual(files[0].rawNewPath, Data(pathBytes))
+        // displayPath is a Latin-1 decoded string
+        XCTAssertFalse(files[0].newPath.isEmpty)
     }
 
     func testParseNameStatusRenameAndOtherMixed() {

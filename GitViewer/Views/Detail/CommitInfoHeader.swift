@@ -2,6 +2,8 @@ import SwiftUI
 
 struct CommitInfoHeader: View {
     let commit: Commit
+    let commitBody: String
+    let showAbsoluteDates: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -9,9 +11,8 @@ struct CommitInfoHeader: View {
                 .font(.headline)
                 .lineLimit(2)
 
-            let bodyText = messageBody
-            if !bodyText.isEmpty {
-                Text(bodyText)
+            if !commitBody.isEmpty {
+                Text(commitBody)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(3)
@@ -25,7 +26,10 @@ struct CommitInfoHeader: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
-                Label(commit.authorDate.relativeDisplay, systemImage: "clock")
+                Label(
+                    showAbsoluteDates ? commit.authorDate.absoluteDisplay : commit.authorDate.relativeDisplay,
+                    systemImage: showAbsoluteDates ? "calendar" : "clock"
+                )
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 if commit.committerName != commit.authorName || commit.committerEmail != commit.authorEmail {
@@ -38,13 +42,5 @@ struct CommitInfoHeader: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var messageBody: String {
-        let lines = commit.message
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .components(separatedBy: "\n")
-        return lines.dropFirst().joined(separator: "\n")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

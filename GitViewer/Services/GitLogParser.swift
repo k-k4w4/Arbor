@@ -1,24 +1,32 @@
 import Foundation
 
 struct GitLogParser {
-    // git log format fields (NUL-separated, terminated by ASCII RS \x1E):
+    // git log format fields (NUL-separated, terminated by NUL+RS \x00\x1E):
     // 0:SHA 1:parents 2:authorName 3:authorEmail 4:authorDate
-    // 5:committerName 6:committerEmail 7:committerDate 8:subject 9:body 10:decoration(%D)
-    private static let dateFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "en_US_POSIX")
-        f.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
-        return f
-    }()
+    // 5:committerName 6:committerEmail 7:committerDate 8:subject 9:decoration(%D)
+    // Record terminator is \x00\x1E so a bare \x1E in a commit subject is safe.
+    // Body (%b) is intentionally excluded — loaded lazily via fetchCommitBody.
 
     static func parse(_ output: String) -> [Commit] {
-        output
-            .components(separatedBy: "\u{1E}")
-            .compactMap { parseBlock($0) }
+        // One formatter per parse call — avoids shared mutable state while still
+        // reusing the same instance across all records in this batch.
+        let df = DateFormatter()
+        df.locale = Locale(identifier: "en_US_POSIX")
+        df.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
+        // split returns [Substring] — views into output, no copy per record.
+        var result: [Commit] = []
+        for record in output.split(separator: "\0\u{1E}") {
+            if Task.isCancelled { break }
+            if let c = parseBlock(record, dateFormatter: df) { result.append(c) }
+        }
+        return result
     }
 
-    private static func parseBlock(_ block: String) -> Commit? {
-        let parts = block.components(separatedBy: "\0")
+    // Takes Substring to avoid a per-record String copy; fields are split as Substrings too.
+    private static func parseBlock(_ block: Substring, dateFormatter: DateFormatter) -> Commit? {
+        // split(omittingEmptySubsequences:false) returns [Substring] — no field string copies.
+        let parts = block.split(separator: "\0", omittingEmptySubsequences: false)
+        // Minimum 10 tokens: fields 0-8 (sha…subject) + decoration as parts[9].
         guard parts.count >= 10 else { return nil }
 
         let sha = parts[0].trimmingCharacters(in: .whitespacesAndNewlines)
@@ -27,48 +35,61 @@ struct GitLogParser {
         let parentSHAs = parts[1].split(separator: " ").map(String.init).filter { !$0.isEmpty }
         let authorDate = dateFormatter.date(from: parts[4].trimmingCharacters(in: .whitespacesAndNewlines)) ?? Date.distantPast
         let committerDate = dateFormatter.date(from: parts[7].trimmingCharacters(in: .whitespacesAndNewlines)) ?? Date.distantPast
-        let body = parts[9].trimmingCharacters(in: .whitespacesAndNewlines)
-        // decoration (%D) is always the last NUL-separated token because it is the
-        // final field before the %x1E record separator.  When %b (body) contains NUL
-        // characters extra tokens appear, so using parts.last is more robust than parts[10].
-        guard parts.count >= 11 else { return nil }
-        let decoration = parts.last ?? ""
 
         return Commit(
             id: sha,
             shortSHA: String(sha.prefix(7)),
             parentSHAs: parentSHAs,
-            subject: parts[8],
-            message: body.isEmpty ? parts[8] : parts[8] + "\n\n" + body,
-            authorName: parts[2],
-            authorEmail: parts[3],
+            subject: String(parts[8]),
+            message: String(parts[8]),
+            authorName: String(parts[2]),
+            authorEmail: String(parts[3]),
             authorDate: authorDate,
-            committerName: parts[5],
-            committerEmail: parts[6],
+            committerName: String(parts[5]),
+            committerEmail: String(parts[6]),
             committerDate: committerDate,
-            refs: parseDecoration(decoration)
+            refs: parseDecoration(String(parts[9]))
         )
     }
 
+    // Parses %D decoration produced by `git log --decorate=full`.
+    // Full ref names (refs/heads/*, refs/remotes/*, refs/tags/*) allow unambiguous
+    // classification of local branches that contain slashes (e.g. feature/foo).
     private static func parseDecoration(_ decoration: String) -> [GitRef] {
         let trimmed = decoration.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return [] }
 
         return trimmed.components(separatedBy: ", ").compactMap { item -> GitRef? in
             if item.hasPrefix("HEAD -> ") {
-                let branch = String(item.dropFirst(8))
-                return GitRef(name: "refs/heads/\(branch)", shortName: branch, sha: "", refType: .localBranch, isHead: true)
+                let fullRef = String(item.dropFirst(8))
+                let shortName = fullRef.hasPrefix("refs/heads/")
+                    ? String(fullRef.dropFirst("refs/heads/".count))
+                    : fullRef
+                return GitRef(name: fullRef, shortName: shortName, sha: "", refType: .localBranch, isHead: true)
             } else if item == "HEAD" {
                 return nil
             } else if item.hasPrefix("tag: ") {
-                let tag = String(item.dropFirst(5))
-                return GitRef(name: "refs/tags/\(tag)", shortName: tag, sha: "", refType: .tag)
-            } else if let slashRange = item.range(of: "/") {
-                let remote = String(item[item.startIndex..<slashRange.lowerBound])
-                let branch = String(item[slashRange.upperBound...])
-                return GitRef(name: "refs/remotes/\(item)", shortName: branch, sha: "", refType: .remoteBranch(remote: remote))
+                let fullRef = String(item.dropFirst(5))
+                let shortName = fullRef.hasPrefix("refs/tags/")
+                    ? String(fullRef.dropFirst("refs/tags/".count))
+                    : fullRef
+                return GitRef(name: fullRef, shortName: shortName, sha: "", refType: .tag)
+            }
+            // For remote/local branches, take only the ref name before any " -> " symbolic pointer.
+            let refOnly = item.components(separatedBy: " -> ").first ?? item
+            if refOnly.hasPrefix("refs/remotes/") {
+                // Skip symbolic remote HEADs (e.g. refs/remotes/origin/HEAD).
+                guard !refOnly.hasSuffix("/HEAD") else { return nil }
+                let rest = String(refOnly.dropFirst("refs/remotes/".count))
+                guard let slashIdx = rest.firstIndex(of: "/") else { return nil }
+                let remote = String(rest[rest.startIndex..<slashIdx])
+                let branch = String(rest[rest.index(after: slashIdx)...])
+                return GitRef(name: refOnly, shortName: branch, sha: "", refType: .remoteBranch(remote: remote))
+            } else if refOnly.hasPrefix("refs/heads/") {
+                let shortName = String(refOnly.dropFirst("refs/heads/".count))
+                return GitRef(name: refOnly, shortName: shortName, sha: "", refType: .localBranch)
             } else {
-                return GitRef(name: "refs/heads/\(item)", shortName: item, sha: "", refType: .localBranch)
+                return nil
             }
         }
     }

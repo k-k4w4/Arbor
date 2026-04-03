@@ -4,6 +4,7 @@ enum DiffLineType {
     case context
     case added
     case deleted
+    case noNewline  // "\ No newline at end of file"
 }
 
 struct DiffLine: Identifiable {
