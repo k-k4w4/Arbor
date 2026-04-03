@@ -155,8 +155,9 @@ final class DetailViewModel {
                           self.selectedFile?.id == fileID else { return }
                 }
 
-                let result = await parseDiff(output)
-                guard let self, !Task.isCancelled,
+                guard let self else { return }
+                let result = await self.parseDiff(output)
+                guard !Task.isCancelled,
                       self.commit?.id == commitID,
                       self.selectedFile?.id == fileID else { return }
                 self.diffInfoMessage = result.infoMessage

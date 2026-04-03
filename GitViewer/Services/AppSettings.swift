@@ -19,13 +19,7 @@ final class AppSettings {
         appearanceMode = UserDefaults.standard.integer(forKey: "appearanceMode")
         showAbsoluteDates = UserDefaults.standard.bool(forKey: "showAbsoluteDates")
         // Apply persisted appearance before the first frame renders.
-        // Guard against nil NSApp (e.g. unit test environment).
-        guard NSApp != nil else { return }
-        switch appearanceMode {
-        case 1: NSApp.appearance = NSAppearance(named: .aqua)
-        case 2: NSApp.appearance = NSAppearance(named: .darkAqua)
-        default: break
-        }
+        applyAppearance()
     }
 
     func applyAppearance() {

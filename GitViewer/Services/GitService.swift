@@ -20,6 +20,14 @@ actor GitService {
     let repositoryURL: URL
     private let gitPath: String
 
+    // Holds flags shared between the continuation body and the onCancel handler.
+    // Using a class (reference type) lets both closures capture the same instance
+    // via a `let` binding, which Swift 6 concurrency rules allow.
+    private final class ProcessState {
+        var cancelledByTask = false
+        var processLaunched = false
+    }
+
     // Thread-safe lazy resolution via static let (Swift guarantees once-only initialization).
     // Stores Result so a lookup failure is also cached and not retried on every init.
     // Uses FileManager stat checks only — no subprocess — so it never blocks the main thread.
@@ -87,8 +95,7 @@ actor GitService {
         // been called yet.  Calling terminate() on an unlaunched Process throws
         // NSInvalidArgumentException, so we guard with processLaunched.
         let lock = NSLock()
-        var cancelledByTask = false
-        var processLaunched = false
+        let state = ProcessState()
         return try await withTaskCancellationHandler {
             try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Data, Error>) in
                 do {
@@ -101,8 +108,8 @@ actor GitService {
                 // Re-check cancelledByTask immediately after setting processLaunched to
                 // handle the race where onCancel fired between process.run() and this block.
                 lock.lock()
-                processLaunched = true
-                let alreadyCancelled = cancelledByTask
+                state.processLaunched = true
+                let alreadyCancelled = state.cancelledByTask
                 lock.unlock()
                 if alreadyCancelled { process.terminate() }
 
@@ -182,11 +189,10 @@ actor GitService {
 
                 group.notify(queue: queue) {
                     process.waitUntilExit()
-                    let stderr = String(data: stderrData, encoding: .utf8)
-                        ?? String(data: stderrData, encoding: .isoLatin1) ?? ""
+                    let stderr = stderrData.utf8OrLatin1
 
                     lock.lock()
-                    let wasCancelled = cancelledByTask
+                    let wasCancelled = state.cancelledByTask
                     lock.unlock()
 
                     if wasCancelled {
@@ -196,18 +202,15 @@ actor GitService {
                     } else if process.terminationStatus == 0 {
                         continuation.resume(returning: stdoutData)
                     } else {
-                        let errMsg = stderr.isEmpty
-                            ? (String(data: stdoutData, encoding: .utf8)
-                               ?? String(data: stdoutData, encoding: .isoLatin1) ?? "")
-                            : stderr
+                        let errMsg = stderr.isEmpty ? stdoutData.utf8OrLatin1 : stderr
                         continuation.resume(throwing: GitError.commandFailed(errMsg))
                     }
                 }
             }
         } onCancel: {
             lock.lock()
-            cancelledByTask = true
-            let launched = processLaunched
+            state.cancelledByTask = true
+            let launched = state.processLaunched
             lock.unlock()
             if launched { process.terminate() }
         }
@@ -216,8 +219,7 @@ actor GitService {
     // Returns git output as a String (UTF-8, falling back to Latin-1).
     func run(_ arguments: [String], stdinData: Data? = nil, maxOutputBytes: Int? = nil) async throws -> String {
         let data = try await runCore(arguments, stdinData: stdinData, maxOutputBytes: maxOutputBytes)
-        return String(data: data, encoding: .utf8)
-            ?? String(data: data, encoding: .isoLatin1) ?? ""
+        return data.utf8OrLatin1
     }
 
     // Escapes a string for use as a POSIX BRE literal.
@@ -232,6 +234,14 @@ actor GitService {
     private func validateSHA(_ sha: String) throws {
         guard sha.count >= 4, sha.allSatisfy({ $0.isHexDigit }) else {
             throw GitError.parseError("Invalid SHA: \(sha)")
+        }
+    }
+
+    private func validateRef(_ ref: String) throws {
+        guard !ref.isEmpty, !ref.hasPrefix("-"),
+              !ref.contains(".."), !ref.contains("@{"),
+              !ref.contains(" "), !ref.contains("\0") else {
+            throw GitError.parseError("Invalid ref: \(ref)")
         }
     }
 
@@ -360,10 +370,7 @@ actor GitService {
     // MARK: - Log
 
     func fetchLog(ref: String = "HEAD", limit: Int = 200, offset: Int = 0) async throws -> String {
-        guard !ref.isEmpty, !ref.hasPrefix("-"),
-              !ref.contains(".."), !ref.contains("@{"), !ref.contains(" ") else {
-            throw GitError.parseError("Invalid ref: \(ref)")
-        }
+        try validateRef(ref)
         // Record terminator is \x00\x1E (NUL + RS). Since NUL cannot appear in git log field
         // values, this two-byte sequence is safe even if a commit subject contains bare \x1E.
         // Body (%b) is omitted: loaded lazily via fetchCommitBody when a commit is selected.
@@ -379,10 +386,7 @@ actor GitService {
     }
 
     func fetchLogSearch(ref: String, grep: String, limit: Int = 500) async throws -> String {
-        guard !ref.isEmpty, !ref.hasPrefix("-"),
-              !ref.contains(".."), !ref.contains("@{"), !ref.contains(" ") else {
-            throw GitError.parseError("Invalid ref: \(ref)")
-        }
+        try validateRef(ref)
         let format = "%H%x00%P%x00%an%x00%ae%x00%ai%x00%cn%x00%ce%x00%ci%x00%s%x00%D%x00%x1E"
         return try await run([
             "log", ref,
@@ -396,10 +400,7 @@ actor GitService {
     }
 
     func fetchLogSearchByAuthor(ref: String, author: String, limit: Int = 500) async throws -> String {
-        guard !ref.isEmpty, !ref.hasPrefix("-"),
-              !ref.contains(".."), !ref.contains("@{"), !ref.contains(" ") else {
-            throw GitError.parseError("Invalid ref: \(ref)")
-        }
+        try validateRef(ref)
         let format = "%H%x00%P%x00%an%x00%ae%x00%ai%x00%cn%x00%ce%x00%ci%x00%s%x00%D%x00%x1E"
         // --author interprets its argument as a POSIX BRE. Escape BRE metacharacters so
         // the query is treated as a literal string. NSRegularExpression.escapedPattern is
@@ -422,8 +423,7 @@ actor GitService {
     func fetchCommitBody(sha: String) async throws -> String {
         try validateSHA(sha)
         let data = try await runCore(["log", "-1", "--format=%b", sha, "--"], maxOutputBytes: 1_048_576)
-        let output = String(data: data, encoding: .utf8) ?? String(data: data, encoding: .isoLatin1) ?? ""
-        return output.trimmingCharacters(in: .whitespacesAndNewlines)
+        return data.utf8OrLatin1.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     // MARK: - Working Tree
@@ -441,8 +441,7 @@ actor GitService {
             ["diff", "--cached", "--no-ext-diff", "--no-textconv", "--", pathStr],
             maxOutputBytes: 5_000_000
         )
-        return String(data: data, encoding: .utf8)
-            ?? String(data: data, encoding: .isoLatin1) ?? ""
+        return data.utf8OrLatin1
     }
 
     func fetchUnstagedDiff(rawPath: Data) async throws -> String {
@@ -451,13 +450,11 @@ actor GitService {
             ["diff", "--no-ext-diff", "--no-textconv", "--", pathStr],
             maxOutputBytes: 5_000_000
         )
-        return String(data: data, encoding: .utf8)
-            ?? String(data: data, encoding: .isoLatin1) ?? ""
+        return data.utf8OrLatin1
     }
 
     private func validateWorkingTreePath(_ rawPath: Data) throws -> String {
-        let pathStr = String(data: rawPath, encoding: .utf8)
-            ?? String(data: rawPath, encoding: .isoLatin1) ?? ""
+        let pathStr = rawPath.utf8OrLatin1
         guard !rawPath.contains(0),
               !pathStr.isEmpty,
               !pathStr.hasPrefix("/"),
@@ -489,8 +486,7 @@ actor GitService {
         // components should never appear in legitimate repos, but guard anyway.
         // rawPath is checked for NUL (would split the argv entry); pathStr is checked for
         // traversal sequences (the decoded string is what git receives as the pathspec).
-        let pathStr = String(data: rawPath, encoding: .utf8)
-            ?? String(data: rawPath, encoding: .isoLatin1) ?? ""
+        let pathStr = rawPath.utf8OrLatin1
         guard !rawPath.contains(0),
               !pathStr.isEmpty,
               !pathStr.hasPrefix("/"),
@@ -509,7 +505,6 @@ actor GitService {
              "--", pathStr],
             maxOutputBytes: 5_000_000
         )
-        return String(data: data, encoding: .utf8)
-            ?? String(data: data, encoding: .isoLatin1) ?? ""
+        return data.utf8OrLatin1
     }
 }

@@ -5,3 +5,4 @@ extension String {
         String(prefix(7))
     }
 }
+

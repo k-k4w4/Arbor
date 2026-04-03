@@ -20,6 +20,14 @@ final class SidebarViewModel {
     private var loadTask: Task<Void, Never>?
     private var loadGeneration: Int = 0
 
+    private var defaultRef: GitRef? {
+        localBranches.first { $0.isHead }
+            ?? localBranches.first
+            ?? remoteBranches.first
+            ?? tags.first
+            ?? stashes.first
+    }
+
     func cancelAll() {
         loadTask?.cancel()
     }
@@ -90,22 +98,11 @@ final class SidebarViewModel {
             // If the branch was deleted/renamed fall back to HEAD.
             // If it still exists, replace with the fresh instance (updated SHA/isHead).
             let freshRefs = localBranches + remoteBranches + tags + stashes
-            if let current = selectedRef {
-                if let updated = freshRefs.first(where: { $0.name == current.name }) {
-                    selectedRef = updated
-                } else {
-                    selectedRef = localBranches.first { $0.isHead }
-                        ?? localBranches.first
-                        ?? remoteBranches.first
-                        ?? tags.first
-                        ?? stashes.first
-                }
+            if let current = selectedRef,
+               let updated = freshRefs.first(where: { $0.name == current.name }) {
+                selectedRef = updated
             } else {
-                selectedRef = localBranches.first { $0.isHead }
-                    ?? localBranches.first
-                    ?? remoteBranches.first
-                    ?? tags.first
-                    ?? stashes.first
+                selectedRef = defaultRef
             }
         } catch is CancellationError {
             return  // defer handles isLoading with generation guard
