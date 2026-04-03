@@ -265,4 +265,120 @@ final class GitDiffParserTests: XCTestCase {
         let hunks = GitDiffParser.parseDiffContent(diff)
         XCTAssertNotEqual(hunks[0].id, hunks[1].id)
     }
+
+    // MARK: - parseStatusPorcelain
+
+    private func porcelainData(_ s: String) -> Data { s.data(using: .utf8)! }
+
+    func testParseStatusPorcelainEmpty() {
+        XCTAssertTrue(GitDiffParser.parseStatusPorcelain(Data()).isEmpty)
+    }
+
+    func testParseStatusPorcelainUntrackedFile() {
+        // "?? newfile.txt\0"
+        let data = porcelainData("?? newfile.txt\0")
+        let files = GitDiffParser.parseStatusPorcelain(data)
+        XCTAssertEqual(files.count, 1)
+        XCTAssertEqual(files[0].status, .untracked)
+        XCTAssertEqual(files[0].staged, false)
+        XCTAssertEqual(files[0].newPath, "newfile.txt")
+    }
+
+    func testParseStatusPorcelainModifiedUnstaged() {
+        let data = porcelainData(" M file.swift\0")
+        let files = GitDiffParser.parseStatusPorcelain(data)
+        XCTAssertEqual(files.count, 1)
+        XCTAssertEqual(files[0].status, .modified)
+        XCTAssertEqual(files[0].staged, false)
+        XCTAssertEqual(files[0].newPath, "file.swift")
+    }
+
+    func testParseStatusPorcelainModifiedStaged() {
+        let data = porcelainData("M  file.swift\0")
+        let files = GitDiffParser.parseStatusPorcelain(data)
+        XCTAssertEqual(files.count, 1)
+        XCTAssertEqual(files[0].status, .modified)
+        XCTAssertEqual(files[0].staged, true)
+        XCTAssertEqual(files[0].newPath, "file.swift")
+    }
+
+    func testParseStatusPorcelainModifiedBoth() {
+        // X='M' (staged), Y='M' (unstaged) → two entries, staged first
+        let data = porcelainData("MM file.swift\0")
+        let files = GitDiffParser.parseStatusPorcelain(data)
+        XCTAssertEqual(files.count, 2)
+        XCTAssertEqual(files[0].staged, true)
+        XCTAssertEqual(files[1].staged, false)
+        XCTAssertEqual(files[0].newPath, "file.swift")
+        XCTAssertEqual(files[1].newPath, "file.swift")
+    }
+
+    func testParseStatusPorcelainAddedStaged() {
+        let data = porcelainData("A  new.swift\0")
+        let files = GitDiffParser.parseStatusPorcelain(data)
+        XCTAssertEqual(files.count, 1)
+        XCTAssertEqual(files[0].status, .added)
+        XCTAssertEqual(files[0].staged, true)
+    }
+
+    func testParseStatusPorcelainDeletedUnstaged() {
+        let data = porcelainData(" D old.swift\0")
+        let files = GitDiffParser.parseStatusPorcelain(data)
+        XCTAssertEqual(files.count, 1)
+        XCTAssertEqual(files[0].status, .deleted)
+        XCTAssertEqual(files[0].staged, false)
+    }
+
+    func testParseStatusPorcelainMultipleEntries() {
+        // staged modified + untracked — staged entries come before unstaged in result
+        let data = porcelainData("M  a.swift\0?? b.txt\0")
+        let files = GitDiffParser.parseStatusPorcelain(data)
+        XCTAssertEqual(files.count, 2)
+        XCTAssertEqual(files[0].staged, true)
+        XCTAssertEqual(files[0].newPath, "a.swift")
+        XCTAssertEqual(files[1].staged, false)
+        XCTAssertEqual(files[1].newPath, "b.txt")
+    }
+
+    func testParseStatusPorcelainRawBytesPreserved() {
+        // Non-UTF-8 path bytes must round-trip correctly
+        let header: [UInt8] = [UInt8(ascii: " "), UInt8(ascii: "M"), UInt8(ascii: " ")]
+        let pathBytes: [UInt8] = [0xE9, 0x74, 0xE9, 0x2E, 0x74, 0x78, 0x74]  // Latin-1 "été.txt"
+        let data = Data(header + pathBytes + [0x00])
+        let files = GitDiffParser.parseStatusPorcelain(data)
+        XCTAssertEqual(files.count, 1)
+        XCTAssertEqual(files[0].rawNewPath, Data(pathBytes))
+    }
+
+    func testParseStatusPorcelainDiffFileIDsAreUnique() {
+        // A file that appears as both staged and unstaged must produce distinct IDs
+        let data = porcelainData("MM file.swift\0")
+        let files = GitDiffParser.parseStatusPorcelain(data)
+        XCTAssertEqual(files.count, 2)
+        XCTAssertNotEqual(files[0].id, files[1].id)
+    }
+
+    func testParseStatusPorcelainIgnoredSkipped() {
+        // "!!" = ignored file; must produce zero entries
+        let data = porcelainData("!! ignored.swift\0")
+        XCTAssertTrue(GitDiffParser.parseStatusPorcelain(data).isEmpty)
+    }
+
+    func testParseStatusPorcelainConflictBothModified() {
+        // "UU" = both sides modified (conflict); both X and Y are 'U' so parser produces two entries
+        let data = porcelainData("UU conflict.swift\0")
+        let files = GitDiffParser.parseStatusPorcelain(data)
+        XCTAssertEqual(files.count, 2)
+        XCTAssertTrue(files.allSatisfy { $0.status == .unmerged })
+        XCTAssertEqual(files[0].staged, true)
+        XCTAssertEqual(files[1].staged, false)
+    }
+
+    func testParseStatusPorcelainMinimalPath() {
+        // One-character path
+        let data = porcelainData(" M x\0")
+        let files = GitDiffParser.parseStatusPorcelain(data)
+        XCTAssertEqual(files.count, 1)
+        XCTAssertEqual(files[0].newPath, "x")
+    }
 }

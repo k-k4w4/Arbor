@@ -53,12 +53,13 @@ struct GitDiffParser {
         var result: [Data] = []
         var start = data.startIndex
         while let nulIdx = data[start...].firstIndex(of: 0) {
-            result.append(data[start..<nulIdx])
+            // Copy each slice so callers can safely use 0-based integer subscripts.
+            result.append(Data(data[start..<nulIdx]))
             start = data.index(after: nulIdx)
         }
         // Append the remainder only if non-empty; a trailing NUL leaves start == endIndex.
         if start < data.endIndex {
-            result.append(data[start...])
+            result.append(Data(data[start...]))
         }
         return result
     }
@@ -66,6 +67,52 @@ struct GitDiffParser {
     private static func decodeToken(_ data: Data) -> String {
         String(data: data, encoding: .utf8)
             ?? String(data: data, encoding: .isoLatin1) ?? ""
+    }
+
+    // Parses `git status --porcelain=v1 -z --no-renames` output.
+    // Each NUL-terminated entry is "XY PATH" where X=staged status, Y=unstaged status.
+    // Returns a flat list with staged entries (staged:true) before unstaged ones (staged:false).
+    static func parseStatusPorcelain(_ output: Data) -> [DiffFile] {
+        var staged: [DiffFile] = []
+        var unstaged: [DiffFile] = []
+        let tokens = splitByNUL(output)
+        for token in tokens {
+            if Task.isCancelled { break }
+            // Each entry: byte[0]=X, byte[1]=Y, byte[2]=space, bytes[3...]=path
+            guard token.count >= 4, token[2] == UInt8(ascii: " ") else { continue }
+            let x = Character(Unicode.Scalar(token[0]))
+            let y = Character(Unicode.Scalar(token[1]))
+            let pathData = Data(token.dropFirst(3))
+            let path = decodeToken(pathData)
+
+            // Staged status (X != ' ', '?', '!')
+            if x != " " && x != "?" && x != "!" {
+                if let s = porcelainStatus(x) {
+                    staged.append(DiffFile(status: s, newPath: path, rawNewPath: pathData, staged: true))
+                }
+            }
+
+            // Unstaged status (Y != ' ', '!')
+            if y == "?" {
+                unstaged.append(DiffFile(status: .untracked, newPath: path, rawNewPath: pathData, staged: false))
+            } else if y != " " && y != "!" {
+                if let s = porcelainStatus(y) {
+                    unstaged.append(DiffFile(status: s, newPath: path, rawNewPath: pathData, staged: false))
+                }
+            }
+        }
+        return staged + unstaged
+    }
+
+    private static func porcelainStatus(_ c: Character) -> FileStatus? {
+        switch c {
+        case "M": return .modified
+        case "A": return .added
+        case "D": return .deleted
+        case "T": return .typeChanged
+        case "U": return .unmerged
+        default:  return nil
+        }
     }
 
     static func parseDiffContent(_ output: String) -> [DiffHunk] {

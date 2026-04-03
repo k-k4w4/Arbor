@@ -19,6 +19,17 @@ struct ChangedFilesList: View {
         let isSelected = appViewModel.detailVM?.selectedFile?.id == file.id
         HStack(spacing: 6) {
             FileStatusBadge(status: file.status)
+            if let staged = file.staged {
+                Text(staged ? "S" : "U")
+                    .font(.caption2.bold())
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 2)
+                    .background(
+                        staged ? Color.blue.opacity(0.8) : Color.orange.opacity(0.9),
+                        in: RoundedRectangle(cornerRadius: 3)
+                    )
+            }
             Text(file.displayPath)
                 .font(.caption)
                 .lineLimit(1)

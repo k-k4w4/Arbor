@@ -62,11 +62,13 @@ struct CommitListView: View {
                         .tag(commit.id)
                         .listRowInsets(EdgeInsets(top: 6, leading: 10, bottom: 6, trailing: 10))
                         .contextMenu {
-                            Button("SHAをコピー") {
-                                NSPasteboard.general.clearContents()
-                                NSPasteboard.general.setString(commit.id, forType: .string)
+                            if !commit.isWorkingTreeSentinel {
+                                Button("SHAをコピー") {
+                                    NSPasteboard.general.clearContents()
+                                    NSPasteboard.general.setString(commit.id, forType: .string)
+                                }
+                                Divider()
                             }
-                            Divider()
                             Button("Finderで表示") {
                                 if let repoPath = appViewModel.selectedRepository?.path.path {
                                     NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: repoPath)

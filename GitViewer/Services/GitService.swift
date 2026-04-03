@@ -426,6 +426,47 @@ actor GitService {
         return output.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    // MARK: - Working Tree
+
+    func fetchWorkingTreeStatus() async throws -> Data {
+        return try await runCore(
+            ["status", "--porcelain=v1", "-z", "--no-renames", "--untracked-files=all"],
+            maxOutputBytes: 5_242_880
+        )
+    }
+
+    func fetchStagedDiff(rawPath: Data) async throws -> String {
+        let pathStr = try validateWorkingTreePath(rawPath)
+        let data = try await runCore(
+            ["diff", "--cached", "--no-ext-diff", "--no-textconv", "--", pathStr],
+            maxOutputBytes: 5_000_000
+        )
+        return String(data: data, encoding: .utf8)
+            ?? String(data: data, encoding: .isoLatin1) ?? ""
+    }
+
+    func fetchUnstagedDiff(rawPath: Data) async throws -> String {
+        let pathStr = try validateWorkingTreePath(rawPath)
+        let data = try await runCore(
+            ["diff", "--no-ext-diff", "--no-textconv", "--", pathStr],
+            maxOutputBytes: 5_000_000
+        )
+        return String(data: data, encoding: .utf8)
+            ?? String(data: data, encoding: .isoLatin1) ?? ""
+    }
+
+    private func validateWorkingTreePath(_ rawPath: Data) throws -> String {
+        let pathStr = String(data: rawPath, encoding: .utf8)
+            ?? String(data: rawPath, encoding: .isoLatin1) ?? ""
+        guard !rawPath.contains(0),
+              !pathStr.isEmpty,
+              !pathStr.hasPrefix("/"),
+              !pathStr.components(separatedBy: "/").contains("..") else {
+            throw GitError.parseError("Invalid file path")
+        }
+        return pathStr
+    }
+
     // MARK: - Diff
 
     // Returns raw Data to preserve non-UTF-8 path bytes for use in fetchDiffContent.

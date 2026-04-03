@@ -29,6 +29,30 @@ struct CommitRow: View {
     }
 
     var body: some View {
+        if commit.isWorkingTreeSentinel {
+            workingTreeRow
+        } else {
+            commitRow
+        }
+    }
+
+    private var workingTreeRow: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "pencil.circle.fill")
+                .foregroundStyle(.orange)
+                .font(.body)
+                .frame(width: 22)
+            Text(commit.subject)
+                .font(.body)
+                .fontWeight(.medium)
+            Spacer()
+        }
+        .padding(.leading, 6)
+        .padding(.vertical, 2)
+        .accessibilityLabel(commit.subject)
+    }
+
+    private var commitRow: some View {
         HStack(alignment: .top, spacing: 0) {
             if let node = commit.graphNode {
                 CommitGraphView(node: node)

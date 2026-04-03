@@ -21,6 +21,7 @@ struct FileStatusBadge: View {
         case .copied: return .teal
         case .typeChanged: return .orange
         case .unmerged: return .red
+        case .untracked: return .gray
         }
     }
 }

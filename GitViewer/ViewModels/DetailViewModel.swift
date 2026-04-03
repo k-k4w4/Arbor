@@ -54,6 +54,12 @@ final class DetailViewModel {
         isLoadingDiff = false
         errorMessage = nil
         diffInfoMessage = nil
+
+        if commit.isWorkingTreeSentinel {
+            loadWorkingTree(service: service, commitID: commit.id)
+            return
+        }
+
         fileTask = Task { [weak self] in
             do {
                 let rawOutput = try await service.fetchDiff(commit: commit.id)
@@ -89,9 +95,30 @@ final class DetailViewModel {
         }
     }
 
+    private func loadWorkingTree(service: GitService, commitID: String) {
+        fileTask = Task { [weak self] in
+            do {
+                let data = try await service.fetchWorkingTreeStatus()
+                guard let self, !Task.isCancelled, self.commit?.id == commitID else { return }
+                let files = await parseWorkingTreeStatus(data)
+                guard !Task.isCancelled, self.commit?.id == commitID else { return }
+                self.changedFiles = files
+                self.isLoadingFiles = false
+                if let first = files.first {
+                    self.selectFile(first)
+                }
+            } catch is CancellationError {
+                return
+            } catch {
+                guard let self, self.commit?.id == commitID else { return }
+                self.isLoadingFiles = false
+                self.errorMessage = error.localizedDescription
+            }
+        }
+    }
+
     func selectFile(_ file: DiffFile) {
         guard let service = gitService, let commit = commit else { return }
-        // Capture both IDs: file.id alone is status+path which can match across different commits.
         let commitID = commit.id
         let fileID = file.id
         diffTask?.cancel()
@@ -102,30 +129,50 @@ final class DetailViewModel {
         isLoadingDiff = true
         diffTask = Task { [weak self] in
             do {
-                let output = try await service.fetchDiffContent(commit: commitID, rawPath: file.rawNewPath)
-                // Verify both the selected file and the active commit are unchanged.
-                guard let self, !Task.isCancelled,
-                      self.commit?.id == commitID,
-                      self.selectedFile?.id == fileID else { return }
-                // Parse the diff on a background thread (nonisolated child task inherits cancellation).
+                // Untracked files: no diff available from git diff
+                if file.status == .untracked {
+                    guard let self, !Task.isCancelled, self.selectedFile?.id == fileID else { return }
+                    self.diffInfoMessage = "追跡されていないファイルです（差分なし）"
+                    self.diffHunks = []
+                    self.isLoadingDiff = false
+                    return
+                }
+
+                let output: String
+                if let staged = file.staged {
+                    // Working tree diff: staged or unstaged
+                    output = staged
+                        ? try await service.fetchStagedDiff(rawPath: file.rawNewPath)
+                        : try await service.fetchUnstagedDiff(rawPath: file.rawNewPath)
+                    guard let self, !Task.isCancelled,
+                          self.commit?.id == commitID,
+                          self.selectedFile?.id == fileID else { return }
+                } else {
+                    // Commit diff
+                    output = try await service.fetchDiffContent(commit: commitID, rawPath: file.rawNewPath)
+                    guard let self, !Task.isCancelled,
+                          self.commit?.id == commitID,
+                          self.selectedFile?.id == fileID else { return }
+                }
+
                 let result = await parseDiff(output)
-                guard !Task.isCancelled,
+                guard let self, !Task.isCancelled,
                       self.commit?.id == commitID,
                       self.selectedFile?.id == fileID else { return }
                 self.diffInfoMessage = result.infoMessage
                 self.diffHunks = result.hunks
                 self.isLoadingDiff = false
             } catch is CancellationError {
-                // clear() or the next selectFile() manages isLoadingDiff; don't overwrite here.
                 return
             } catch {
                 guard let self, self.commit?.id == commitID, self.selectedFile?.id == fileID else { return }
-                // outputTooLarge is an expected condition, not an error to show in UI.
                 if case .outputTooLarge? = error as? GitError {
                     self.diffInfoMessage = "ファイルが大きすぎるため差分を表示できません"
                     self.diffHunks = []
                 } else {
-                    self.errorMessage = error.localizedDescription
+                    // Binary or otherwise unreadable: show fallback instead of error
+                    self.diffInfoMessage = "差分を取得できません（バイナリまたはファイル不在）"
+                    self.diffHunks = []
                 }
                 self.isLoadingDiff = false
             }
@@ -138,6 +185,11 @@ final class DetailViewModel {
     private nonisolated func parseNameStatus(_ data: Data) async -> [DiffFile] {
         guard !Task.isCancelled else { return [] }
         return GitDiffParser.parseNameStatus(data)
+    }
+
+    private nonisolated func parseWorkingTreeStatus(_ data: Data) async -> [DiffFile] {
+        guard !Task.isCancelled else { return [] }
+        return GitDiffParser.parseStatusPorcelain(data)
     }
 
     private nonisolated func parseDiff(_ output: String) async -> (hunks: [DiffHunk], infoMessage: String?) {

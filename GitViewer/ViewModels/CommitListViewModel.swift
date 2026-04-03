@@ -17,17 +17,21 @@ final class CommitListViewModel {
     private let pageSize = 200
     private var loadTask: Task<Void, Never>?
     private var searchTask: Task<Void, Never>?
+    private var workingTreeTask: Task<Void, Never>?
+    private var workingTreeGeneration = 0
     private var gitService: GitService?
     private var graphActiveLanes: [String?] = []  // incremental graph state across pages
 
     func cancelAll() {
         loadTask?.cancel()
         searchTask?.cancel()
+        workingTreeTask?.cancel()
     }
 
     func loadInitial(ref: String, service: GitService) {
         loadTask?.cancel()
         searchTask?.cancel()
+        workingTreeTask?.cancel()
         commits = []
         filteredCommits = []
         fetchOffset = 0
@@ -39,7 +43,10 @@ final class CommitListViewModel {
         currentRef = ref
         gitService = service
         searchQuery = ""
+        workingTreeGeneration += 1
+        let wtGen = workingTreeGeneration
         loadTask = Task { [weak self] in await self?.fetchPage() }
+        workingTreeTask = Task { [weak self] in await self?.fetchWorkingTree(service: service, generation: wtGen) }
     }
 
     func loadMore() {
@@ -71,7 +78,8 @@ final class CommitListViewModel {
             }
         } else {
             loadTask?.cancel()
-            filteredCommits = []
+            // Suppress working tree sentinel during search (search results come from git log, not working tree).
+            filteredCommits = commits.filter { !$0.isWorkingTreeSentinel }
             selectedCommit = nil
             errorMessage = nil
             isLoading = true
@@ -81,6 +89,43 @@ final class CommitListViewModel {
                 }
                 await self?.performGlobalSearch(query: query)
             }
+        }
+    }
+
+    // MARK: - Working Tree
+
+    private func fetchWorkingTree(service: GitService, generation: Int) async {
+        do {
+            let data = try await service.fetchWorkingTreeStatus()
+            // Guard against a concurrent loadInitial that reset the generation counter.
+            // Task.isCancelled alone is unreliable if the subprocess finished before the cancel arrived.
+            guard !Task.isCancelled, workingTreeGeneration == generation else { return }
+            let files = await parseWorkingTreeStatus(data)
+            guard !Task.isCancelled, workingTreeGeneration == generation else { return }
+            if !files.isEmpty {
+                prependSentinelIfNeeded(fileCount: files.count)
+            }
+        } catch is CancellationError {
+            return
+        } catch {
+            // Non-fatal: working tree sentinel is optional
+        }
+    }
+
+    private nonisolated func parseWorkingTreeStatus(_ data: Data) async -> [DiffFile] {
+        guard !Task.isCancelled else { return [] }
+        return GitDiffParser.parseStatusPorcelain(data)
+    }
+
+    private func prependSentinelIfNeeded(fileCount: Int) {
+        guard searchQuery.isEmpty else { return }
+        // Avoid duplicates on rapid refresh
+        if commits.first?.isWorkingTreeSentinel == true { return }
+        let sentinel = Commit.makeWorkingTreeSentinel(fileCount: fileCount)
+        commits.insert(sentinel, at: 0)
+        filteredCommits = commits
+        if selectedCommit == nil {
+            selectedCommit = sentinel
         }
     }
 

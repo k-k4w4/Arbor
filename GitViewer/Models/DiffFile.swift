@@ -8,6 +8,7 @@ enum FileStatus: String, Hashable {
     case copied = "C"
     case typeChanged = "T"
     case unmerged = "U"
+    case untracked = "?"
 }
 
 struct DiffFile: Identifiable {
@@ -19,10 +20,13 @@ struct DiffFile: Identifiable {
     var rawOldPath: Data?
     var hunks: [DiffHunk]
     var isBinary: Bool
+    var staged: Bool?       // nil = committed diff; true = staged area; false = working tree
 
     init(status: FileStatus, oldPath: String? = nil, newPath: String,
-         rawOldPath: Data? = nil, rawNewPath: Data, isBinary: Bool = false) {
-        self.id = "\(status.rawValue):\(oldPath ?? ""):\(newPath)"
+         rawOldPath: Data? = nil, rawNewPath: Data, isBinary: Bool = false, staged: Bool? = nil) {
+        // Include staged flag in id so staged+unstaged versions of the same path are distinct.
+        let stagedTag = staged.map { $0 ? "S" : "U" } ?? "C"
+        self.id = "\(status.rawValue):\(stagedTag):\(oldPath ?? ""):\(newPath)"
         self.status = status
         self.oldPath = oldPath
         self.newPath = newPath
@@ -30,6 +34,7 @@ struct DiffFile: Identifiable {
         self.rawOldPath = rawOldPath
         self.hunks = []
         self.isBinary = isBinary
+        self.staged = staged
     }
 
     var displayPath: String { newPath }

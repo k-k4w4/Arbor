@@ -7,36 +7,42 @@ struct CommitInfoHeader: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(commit.subject)
-                .font(.headline)
-                .lineLimit(2)
+            if commit.isWorkingTreeSentinel {
+                Label(commit.subject, systemImage: "pencil.circle.fill")
+                    .font(.headline)
+                    .foregroundStyle(.orange)
+            } else {
+                Text(commit.subject)
+                    .font(.headline)
+                    .lineLimit(2)
 
-            if !commitBody.isEmpty {
-                Text(commitBody)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(3)
-            }
+                if !commitBody.isEmpty {
+                    Text(commitBody)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(3)
+                }
 
-            HStack(spacing: 12) {
-                Label(commit.shortSHA, systemImage: "number")
-                    .font(.caption.monospaced())
-                    .foregroundStyle(.secondary)
-                Label(commit.authorName, systemImage: "person")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                Label(
-                    showAbsoluteDates ? commit.authorDate.absoluteDisplay : commit.authorDate.relativeDisplay,
-                    systemImage: showAbsoluteDates ? "calendar" : "clock"
-                )
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                if commit.committerName != commit.authorName || commit.committerEmail != commit.authorEmail {
-                    Label(commit.committerName, systemImage: "person.badge.clock")
+                HStack(spacing: 12) {
+                    Label(commit.shortSHA, systemImage: "number")
+                        .font(.caption.monospaced())
+                        .foregroundStyle(.secondary)
+                    Label(commit.authorName, systemImage: "person")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
+                    Label(
+                        showAbsoluteDates ? commit.authorDate.absoluteDisplay : commit.authorDate.relativeDisplay,
+                        systemImage: showAbsoluteDates ? "calendar" : "clock"
+                    )
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    if commit.committerName != commit.authorName || commit.committerEmail != commit.authorEmail {
+                        Label(commit.committerName, systemImage: "person.badge.clock")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
                 }
             }
         }
