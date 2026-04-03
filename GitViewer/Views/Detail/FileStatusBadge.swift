@@ -7,7 +7,7 @@ struct FileStatusBadge: View {
         Text(status.rawValue)
             .font(.caption2.bold())
             .foregroundStyle(.white)
-            .padding(.horizontal, 5)
+            .frame(width: 20)
             .padding(.vertical, 2)
             .background(badgeColor, in: RoundedRectangle(cornerRadius: 3))
     }

@@ -129,11 +129,13 @@ final class DetailViewModel {
         isLoadingDiff = true
         diffTask = Task { [weak self] in
             do {
-                // Untracked files: no diff available from git diff
+                // Untracked files: read from disk and display as all-added lines
                 if file.status == .untracked {
+                    let content = try await service.fetchUntrackedContent(rawPath: file.rawNewPath)
                     guard let self, !Task.isCancelled, self.selectedFile?.id == fileID else { return }
-                    self.diffInfoMessage = "追跡されていないファイルです（差分なし）"
-                    self.diffHunks = []
+                    let hunk = DetailViewModel.buildAllAddedHunk(content: content)
+                    self.diffHunks = hunk.lines.isEmpty ? [] : [hunk]
+                    self.diffInfoMessage = hunk.lines.isEmpty ? "空のファイルです" : nil
                     self.isLoadingDiff = false
                     return
                 }
@@ -182,6 +184,25 @@ final class DetailViewModel {
 
     // nonisolated async: awaiting from @MainActor suspends the actor and runs the function on
     // the cooperative thread pool. Cancellation is inherited (same task, not separate child tasks).
+
+    private static func buildAllAddedHunk(content: String) -> DiffHunk {
+        var lines = content.components(separatedBy: "\n")
+        if lines.last == "" { lines.removeLast() }
+        var hunk = DiffHunk(
+            header: "@@ -0,0 +1,\(lines.count) @@",
+            oldStart: 0, oldCount: 0,
+            newStart: 1, newCount: lines.count
+        )
+        for (i, line) in lines.enumerated() {
+            hunk.lines.append(DiffLine(
+                hunkIndex: 0, index: i,
+                type: .added,
+                content: line,
+                newLineNumber: i + 1
+            ))
+        }
+        return hunk
+    }
 
     private nonisolated func parseNameStatus(_ data: Data) async -> [DiffFile] {
         guard !Task.isCancelled else { return [] }

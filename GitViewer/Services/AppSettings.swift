@@ -14,10 +14,30 @@ final class AppSettings {
     var showAbsoluteDates: Bool {
         didSet { UserDefaults.standard.set(showAbsoluteDates, forKey: "showAbsoluteDates") }
     }
+    var isRepositoriesCollapsed: Bool {
+        didSet { UserDefaults.standard.set(isRepositoriesCollapsed, forKey: "isRepositoriesCollapsed") }
+    }
+    var isBranchesCollapsed: Bool {
+        didSet { UserDefaults.standard.set(isBranchesCollapsed, forKey: "isBranchesCollapsed") }
+    }
+    var isRemotesCollapsed: Bool {
+        didSet { UserDefaults.standard.set(isRemotesCollapsed, forKey: "isRemotesCollapsed") }
+    }
+    var isTagsCollapsed: Bool {
+        didSet { UserDefaults.standard.set(isTagsCollapsed, forKey: "isTagsCollapsed") }
+    }
+    var isStashesCollapsed: Bool {
+        didSet { UserDefaults.standard.set(isStashesCollapsed, forKey: "isStashesCollapsed") }
+    }
 
     init() {
         appearanceMode = UserDefaults.standard.integer(forKey: "appearanceMode")
         showAbsoluteDates = UserDefaults.standard.bool(forKey: "showAbsoluteDates")
+        isRepositoriesCollapsed = UserDefaults.standard.bool(forKey: "isRepositoriesCollapsed")
+        isBranchesCollapsed = UserDefaults.standard.bool(forKey: "isBranchesCollapsed")
+        isRemotesCollapsed = UserDefaults.standard.bool(forKey: "isRemotesCollapsed")
+        isTagsCollapsed = UserDefaults.standard.bool(forKey: "isTagsCollapsed")
+        isStashesCollapsed = UserDefaults.standard.bool(forKey: "isStashesCollapsed")
         // Apply persisted appearance before the first frame renders.
         applyAppearance()
     }

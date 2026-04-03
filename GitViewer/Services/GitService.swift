@@ -444,6 +444,34 @@ actor GitService {
         return data.utf8OrLatin1
     }
 
+    // Reads an untracked (not in index) file from disk and returns its content.
+    // Throws GitError.outputTooLarge for files > 5MB, GitError.commandFailed for binaries.
+    // I/O is offloaded to a global queue to avoid blocking the actor thread.
+    func fetchUntrackedContent(rawPath: Data) async throws -> String {
+        try Task.checkCancellation()
+        let pathStr = try validateWorkingTreePath(rawPath)
+        let fileURL = repositoryURL.appendingPathComponent(pathStr)
+        return try await withCheckedThrowingContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    let attrs = try FileManager.default.attributesOfItem(atPath: fileURL.path)
+                    if let size = attrs[.size] as? Int, size > 5_000_000 {
+                        continuation.resume(throwing: GitError.outputTooLarge)
+                        return
+                    }
+                    let data = try Data(contentsOf: fileURL)
+                    guard !data.contains(0) else {
+                        continuation.resume(throwing: GitError.commandFailed("binary file"))
+                        return
+                    }
+                    continuation.resume(returning: data.utf8OrLatin1)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
     func fetchUnstagedDiff(rawPath: Data) async throws -> String {
         let pathStr = try validateWorkingTreePath(rawPath)
         let data = try await runCore(

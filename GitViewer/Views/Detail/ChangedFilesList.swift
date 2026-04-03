@@ -23,7 +23,7 @@ struct ChangedFilesList: View {
                 Text(staged ? "S" : "U")
                     .font(.caption2.bold())
                     .foregroundStyle(.white)
-                    .padding(.horizontal, 4)
+                    .frame(width: 20)
                     .padding(.vertical, 2)
                     .background(
                         staged ? Color.blue.opacity(0.8) : Color.orange.opacity(0.9),
