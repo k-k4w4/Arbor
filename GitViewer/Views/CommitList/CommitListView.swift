@@ -3,6 +3,7 @@ import AppKit
 
 struct CommitListView: View {
     @Environment(AppViewModel.self) private var appViewModel
+    @Environment(AppSettings.self) private var settings
 
     var body: some View {
         contentView
@@ -16,11 +17,11 @@ struct CommitListView: View {
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        appViewModel.showAbsoluteDates.toggle()
+                        settings.showAbsoluteDates.toggle()
                     } label: {
-                        Image(systemName: appViewModel.showAbsoluteDates ? "calendar" : "clock")
+                        Image(systemName: settings.showAbsoluteDates ? "calendar" : "clock")
                     }
-                    .help(appViewModel.showAbsoluteDates ? "相対表示に切り替え" : "絶対日時表示に切り替え")
+                    .help(settings.showAbsoluteDates ? "相対表示に切り替え" : "絶対日時表示に切り替え")
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
@@ -57,7 +58,7 @@ struct CommitListView: View {
                     get: { vm.selectedCommit?.id },
                     set: { id in vm.selectedCommit = vm.filteredCommits.first { $0.id == id } }
                 )) { commit in
-                    CommitRow(commit: commit, showAbsoluteDates: appViewModel.showAbsoluteDates)
+                    CommitRow(commit: commit, showAbsoluteDates: settings.showAbsoluteDates)
                         .tag(commit.id)
                         .listRowInsets(EdgeInsets(top: 6, leading: 10, bottom: 6, trailing: 10))
                         .contextMenu {

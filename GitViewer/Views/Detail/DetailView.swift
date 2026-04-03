@@ -7,6 +7,7 @@ private struct DetailTaskKey: Equatable {
 
 struct DetailView: View {
     @Environment(AppViewModel.self) private var appViewModel
+    @Environment(AppSettings.self) private var settings
 
     private var taskKey: DetailTaskKey {
         DetailTaskKey(
@@ -35,7 +36,7 @@ struct DetailView: View {
     private var contentView: some View {
         if let vm = appViewModel.detailVM, let commit = vm.commit {
             VStack(spacing: 0) {
-                CommitInfoHeader(commit: commit, commitBody: vm.commitBody, showAbsoluteDates: appViewModel.showAbsoluteDates)
+                CommitInfoHeader(commit: commit, commitBody: vm.commitBody, showAbsoluteDates: settings.showAbsoluteDates)
                 Divider()
                 if vm.isLoadingFiles {
                     ProgressView()

@@ -10,7 +10,6 @@ final class AppViewModel {
     var commitListVM: CommitListViewModel?
     var detailVM: DetailViewModel?
     var errorMessage: String?
-    var showAbsoluteDates: Bool = false
 
     var windowTitle: String {
         guard let repo = selectedRepository else { return "GitViewer" }

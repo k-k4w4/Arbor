@@ -49,6 +49,8 @@
 		DF1611244509D1EAA695092B /* GitLogParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B2CD2AD09C95F40ACCF987 /* GitLogParser.swift */; };
 		E0ED0C3CABDB956605561F9F /* RepositoryListSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2585050D59A1E77D4758914 /* RepositoryListSection.swift */; };
 		FC5AA4565239F6CDC24EA9C9 /* AppViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19146233A3079ABC93BE6F1E /* AppViewModel.swift */; };
+		AA11000000000002AABBCCDD /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11000000000001AABBCCDD /* AppSettings.swift */; };
+		AA11000000000004AABBCCDD /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11000000000003AABBCCDD /* PreferencesView.swift */; };
 		FD701CB84671AB33F21A8D0C /* Date+RelativeFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = D553759A068EAB5994874323 /* Date+RelativeFormat.swift */; };
 /* End PBXBuildFile section */
 
@@ -105,6 +107,8 @@
 		E98B4C0A7D59604D2CFF3CAD /* GitViewerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GitViewerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		EEAED189D57246ABCFFCA381 /* FileStatusBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileStatusBadge.swift; sourceTree = "<group>"; };
 		F727BB13937B6A2C4B6CD88C /* GitViewer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GitViewer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA11000000000001AABBCCDD /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		AA11000000000003AABBCCDD /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
 		F839A48F48222D567B575303 /* GitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitService.swift; sourceTree = "<group>"; };
 		FC4FB76D808E735A66411350 /* GitDiffParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitDiffParser.swift; sourceTree = "<group>"; };
 		FDC242A3FE8E1FE74D075DA1 /* Repository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Repository.swift; sourceTree = "<group>"; };
@@ -115,6 +119,7 @@
 		017D5A4BA8240A5DB01FD015 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				AA11000000000001AABBCCDD /* AppSettings.swift */,
 				FC4FB76D808E735A66411350 /* GitDiffParser.swift */,
 				95B2CD2AD09C95F40ACCF987 /* GitLogParser.swift */,
 				F839A48F48222D567B575303 /* GitService.swift */,
@@ -235,6 +240,7 @@
 		C2B386FB4EFCE8739A85ECA5 /* Root */ = {
 			isa = PBXGroup;
 			children = (
+				AA11000000000003AABBCCDD /* PreferencesView.swift */,
 				6CBBDE6BCDDB6FEFFD46D1AC /* RootView.swift */,
 				07B203FE497E953EACC23600 /* WelcomeView.swift */,
 			);
@@ -371,6 +377,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3E71B18E876C7726F9947D3B /* AppCommands.swift in Sources */,
+				AA11000000000002AABBCCDD /* AppSettings.swift in Sources */,
 				FC5AA4565239F6CDC24EA9C9 /* AppViewModel.swift in Sources */,
 				269FA9493853B2CFE34071F5 /* Branch.swift in Sources */,
 				AB8B03BF15E8A6C0C7CE0C2F /* BranchCell.swift in Sources */,
@@ -408,6 +415,7 @@
 				65775D55CB0B06AA18CE7DBB /* String+SHA.swift in Sources */,
 				6E7AC0D02B84C5CCDA6B499F /* UnifiedDiffView.swift in Sources */,
 				53FD5FB994E4E8FEF85E7E09 /* WelcomeView.swift in Sources */,
+				AA11000000000004AABBCCDD /* PreferencesView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
