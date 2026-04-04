@@ -1,5 +1,28 @@
 import SwiftUI
 
+private struct FileListToggleButton: View {
+    @Environment(AppSettings.self) private var settings
+    @State private var isHovered = false
+
+    var body: some View {
+        @Bindable var settings = settings
+        Image(systemName: settings.showFileTree ? "list.bullet" : "list.bullet.indent")
+            .font(.caption)
+            .foregroundStyle(isHovered ? Color.primary : Color.secondary)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .background(
+                isHovered ? Color.primary.opacity(0.08) : Color.clear,
+                in: RoundedRectangle(cornerRadius: 4)
+            )
+            .contentShape(Rectangle())
+            .onHover { isHovered = $0 }
+            .onTapGesture { settings.showFileTree.toggle() }
+            .help(settings.showFileTree ? "フラットリスト表示" : "ツリー表示")
+            .padding(.trailing, 6)
+    }
+}
+
 private struct DetailTaskKey: Equatable {
     let repositoryID: UUID?
     let commitID: String?
@@ -47,8 +70,16 @@ struct DetailView: View {
                     EmptyStateView(icon: "doc", message: "変更ファイルがありません")
                 } else {
                     VSplitView {
-                        ChangedFilesList(files: vm.changedFiles)
-                            .frame(minHeight: 60, idealHeight: 160)
+                        VStack(spacing: 0) {
+                            fileListHeader
+                            Divider()
+                            if settings.showFileTree {
+                                FileTreeView(files: vm.changedFiles)
+                            } else {
+                                ChangedFilesList(files: vm.changedFiles)
+                            }
+                        }
+                        .frame(minHeight: 60, idealHeight: 160)
                         diffArea(vm: vm)
                             .frame(minHeight: 80)
                     }
@@ -60,6 +91,16 @@ struct DetailView: View {
                 message: "コミットを選択してください"
             )
         }
+    }
+
+    @ViewBuilder
+    private var fileListHeader: some View {
+        HStack {
+            Spacer()
+            FileListToggleButton()
+        }
+        .frame(height: 24)
+        .background(.bar)
     }
 
     @ViewBuilder

@@ -8,6 +8,7 @@ struct PreferencesView: View {
         Form {
             Section("一般") {
                 Toggle("日時を絶対表示する", isOn: $settings.showAbsoluteDates)
+                Toggle("変更ファイルをツリー表示する", isOn: $settings.showFileTree)
             }
             Section("外観") {
                 Picker("テーマ", selection: $settings.appearanceMode) {

@@ -29,6 +29,9 @@ final class AppSettings {
     var isStashesCollapsed: Bool {
         didSet { UserDefaults.standard.set(isStashesCollapsed, forKey: "isStashesCollapsed") }
     }
+    var showFileTree: Bool {
+        didSet { UserDefaults.standard.set(showFileTree, forKey: "showFileTree") }
+    }
 
     init() {
         appearanceMode = UserDefaults.standard.integer(forKey: "appearanceMode")
@@ -38,6 +41,7 @@ final class AppSettings {
         isRemotesCollapsed = UserDefaults.standard.bool(forKey: "isRemotesCollapsed")
         isTagsCollapsed = UserDefaults.standard.bool(forKey: "isTagsCollapsed")
         isStashesCollapsed = UserDefaults.standard.bool(forKey: "isStashesCollapsed")
+        showFileTree = UserDefaults.standard.bool(forKey: "showFileTree")
         // Apply persisted appearance before the first frame renders.
         applyAppearance()
     }
