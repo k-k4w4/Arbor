@@ -12,7 +12,11 @@ final class CommitListViewModel {
     var hasMore: Bool = true
     var errorMessage: String?
 
-    private(set) var currentRef: String = "HEAD"
+    // Empty string ensures the initial `ref.gitRef != currentRef` guard in
+    // CommitListView's .task(id:) always passes on a fresh VM, including
+    // detached HEAD repos where gitRef == "HEAD" would otherwise match the
+    // old "HEAD" default and silently skip the initial load.
+    private(set) var currentRef: String = ""
     private var fetchOffset: Int = 0
     private let pageSize = 200
     private var loadTask: Task<Void, Never>?

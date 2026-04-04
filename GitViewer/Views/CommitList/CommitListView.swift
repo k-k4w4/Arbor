@@ -1,12 +1,31 @@
 import SwiftUI
 import AppKit
 
+private struct CommitLoadKey: Equatable {
+    let repositoryID: UUID?
+    let ref: String?
+}
+
 struct CommitListView: View {
     @Environment(AppViewModel.self) private var appViewModel
     @Environment(AppSettings.self) private var settings
 
+    private var commitLoadKey: CommitLoadKey {
+        CommitLoadKey(
+            repositoryID: appViewModel.selectedRepository?.id,
+            ref: appViewModel.sidebarVM?.selectedRef?.gitRef
+        )
+    }
+
     var body: some View {
         contentView
+            .task(id: commitLoadKey) {
+                guard let ref = appViewModel.sidebarVM?.selectedRef,
+                      let vm = appViewModel.commitListVM,
+                      let service = appViewModel.gitService,
+                      ref.gitRef != vm.currentRef else { return }
+                vm.loadInitial(ref: ref.gitRef, service: service)
+            }
             .toolbar {
                 ToolbarItem(placement: .navigation) {
                     if let ref = appViewModel.sidebarVM?.selectedRef {
