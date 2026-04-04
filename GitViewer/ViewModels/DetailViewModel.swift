@@ -13,6 +13,10 @@ final class DetailViewModel {
     var isLoadingDiff: Bool = false
     var errorMessage: String?
     var diffInfoMessage: String?
+    // Binary preview state — set when a binary file is selected
+    var binaryPreviewData: Data?        // image binary (png/jpg/jpeg/gif/webp)
+    var binaryPreviewFileData: Data?    // non-image binary for Quick Look / save
+    var binaryPreviewFilename: String?  // display name for the binary file
 
     private var gitService: GitService?
     private var fileTask: Task<Void, Never>?
@@ -38,6 +42,9 @@ final class DetailViewModel {
         isLoadingDiff = false
         errorMessage = nil
         diffInfoMessage = nil
+        binaryPreviewData = nil
+        binaryPreviewFileData = nil
+        binaryPreviewFilename = nil
     }
 
     func load(commit: Commit, service: GitService) {
@@ -127,6 +134,9 @@ final class DetailViewModel {
         diffInfoMessage = nil
         errorMessage = nil
         isLoadingDiff = true
+        binaryPreviewData = nil
+        binaryPreviewFileData = nil
+        binaryPreviewFilename = nil
         diffTask = Task { [weak self] in
             do {
                 // Untracked files: read from disk and display as all-added lines
@@ -162,21 +172,30 @@ final class DetailViewModel {
                 guard !Task.isCancelled,
                       self.commit?.id == commitID,
                       self.selectedFile?.id == fileID else { return }
-                self.diffInfoMessage = result.infoMessage
+                if result.isBinary {
+                    await self.loadBinaryPreview(file: file, commitID: commitID, service: service, fileID: fileID)
+                    guard !Task.isCancelled, self.commit?.id == commitID, self.selectedFile?.id == fileID else { return }
+                }
+                let hasBinaryPreview = self.binaryPreviewData != nil || self.binaryPreviewFileData != nil
+                self.diffInfoMessage = hasBinaryPreview ? nil : result.infoMessage
                 self.diffHunks = result.hunks
                 self.isLoadingDiff = false
             } catch is CancellationError {
                 return
             } catch {
                 guard let self, self.commit?.id == commitID, self.selectedFile?.id == fileID else { return }
+                // Both too-large and binary/unreadable: attempt to fetch the file for download.
+                let fallbackMessage: String
                 if case .outputTooLarge? = error as? GitError {
-                    self.diffInfoMessage = "ファイルが大きすぎるため差分を表示できません"
-                    self.diffHunks = []
+                    fallbackMessage = "ファイルが大きすぎるため差分を表示できません"
                 } else {
-                    // Binary or otherwise unreadable: show fallback instead of error
-                    self.diffInfoMessage = "差分を取得できません（バイナリまたはファイル不在）"
-                    self.diffHunks = []
+                    fallbackMessage = "差分を取得できません（バイナリまたはファイル不在）"
                 }
+                await self.loadBinaryPreview(file: file, commitID: commitID, service: service, fileID: fileID)
+                guard !Task.isCancelled, self.commit?.id == commitID, self.selectedFile?.id == fileID else { return }
+                let hasBinaryPreview = self.binaryPreviewData != nil || self.binaryPreviewFileData != nil
+                self.diffInfoMessage = hasBinaryPreview ? nil : fallbackMessage
+                self.diffHunks = []
                 self.isLoadingDiff = false
             }
         }
@@ -214,11 +233,45 @@ final class DetailViewModel {
         return GitDiffParser.parseStatusPorcelain(data)
     }
 
-    private nonisolated func parseDiff(_ output: String) async -> (hunks: [DiffHunk], infoMessage: String?) {
-        guard !Task.isCancelled else { return ([], nil) }
+    // Fetch and store binary preview data for the selected file (committed or working tree).
+    // Skips deleted files (no content to fetch).
+    // Sets binaryPreviewData for images, binaryPreviewFileData + binaryPreviewFilename for others.
+    private func loadBinaryPreview(file: DiffFile, commitID: String, service: GitService, fileID: String) async {
+        // Skip deleted files: committed deleted files are gone from the tree;
+        // unstaged deleted files no longer exist on disk. Both cases are covered by this guard.
+        guard file.status != .deleted else { return }
+        guard !Task.isCancelled, commit?.id == commitID, selectedFile?.id == fileID else { return }
+        let ext = URL(fileURLWithPath: file.newPath).pathExtension.lowercased()
+        do {
+            let data: Data
+            if let staged = file.staged {
+                // Working tree: staged area or disk
+                data = staged
+                    ? try await service.fetchStagedFileBlob(rawPath: file.rawNewPath)
+                    : try await service.fetchWorkingTreeFileBlob(rawPath: file.rawNewPath)
+            } else {
+                // Committed file
+                data = try await service.fetchFileBlob(commit: commitID, rawPath: file.rawNewPath)
+            }
+            guard !Task.isCancelled, commit?.id == commitID, selectedFile?.id == fileID else { return }
+            let name = URL(fileURLWithPath: file.newPath).lastPathComponent
+            if ["png", "jpg", "jpeg", "gif", "webp"].contains(ext) {
+                binaryPreviewData = data
+                binaryPreviewFilename = name
+            } else {
+                binaryPreviewFileData = data
+                binaryPreviewFilename = name
+            }
+        } catch {
+            // Preview fetch failed; diffInfoMessage fallback will be used
+        }
+    }
+
+    private nonisolated func parseDiff(_ output: String) async -> (hunks: [DiffHunk], infoMessage: String?, isBinary: Bool) {
+        guard !Task.isCancelled else { return ([], nil, false) }
         if output.contains("\nBinary files ") || output.hasPrefix("Binary files ")
                     || output.contains("\nGIT binary patch") || output.hasPrefix("GIT binary patch") {
-            return ([], "バイナリファイルのため差分を表示できません")
+            return ([], "バイナリファイルのため差分を表示できません", true)
         }
         let hunks = GitDiffParser.parseDiffContent(output)
         if hunks.isEmpty {
@@ -227,8 +280,8 @@ final class DetailViewModel {
                 || output.contains("\nnew file mode ") || output.contains("\ndeleted file mode ")
                 || output.contains("\nnew mode ") || output.contains("\nold mode ")
                 || output.contains("\nsimilarity index ")
-            return ([], hasMetadata ? "内容変更なし（ファイルモード・名前変更のみ）" : nil)
+            return ([], hasMetadata ? "内容変更なし（ファイルモード・名前変更のみ）" : nil, false)
         }
-        return (hunks, nil)
+        return (hunks, nil, false)
     }
 }

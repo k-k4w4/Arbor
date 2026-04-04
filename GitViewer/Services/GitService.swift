@@ -506,6 +506,58 @@ actor GitService {
                                  maxOutputBytes: 5_242_880)
     }
 
+    // Validates a raw path Data from git output: no NUL, non-empty, no absolute or traversal path.
+    // Returns the decoded path string on success.
+    private func validateBlobPath(_ rawPath: Data) throws -> String {
+        let pathStr = rawPath.utf8OrLatin1
+        guard !rawPath.contains(0),
+              !pathStr.isEmpty,
+              !pathStr.hasPrefix("/"),
+              !pathStr.components(separatedBy: "/").contains("..") else {
+            throw GitError.parseError("Invalid file path")
+        }
+        return pathStr
+    }
+
+    // Returns the staged blob for a working tree file (git show :<path>).
+    func fetchStagedFileBlob(rawPath: Data) async throws -> Data {
+        let pathStr = try validateBlobPath(rawPath)
+        return try await runCore(["show", ":\(pathStr)"], maxOutputBytes: 52_428_800)
+    }
+
+    // Returns the current on-disk content for a working tree file.
+    // Enforces the same 50MB limit as fetchFileBlob to prevent OOM on large files.
+    func fetchWorkingTreeFileBlob(rawPath: Data) async throws -> Data {
+        try Task.checkCancellation()
+        let pathStr = try validateBlobPath(rawPath)
+        let fileURL = repositoryURL.appendingPathComponent(pathStr)
+        return try await withCheckedThrowingContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    let attrs = try FileManager.default.attributesOfItem(atPath: fileURL.path)
+                    if let size = attrs[.size] as? Int, size > 52_428_800 {
+                        continuation.resume(throwing: GitError.outputTooLarge)
+                        return
+                    }
+                    let data = try Data(contentsOf: fileURL)
+                    continuation.resume(returning: data)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
+    // Returns the raw file content at the given commit (git show <sha>:<path>).
+    // Used for binary file preview; returns Data so callers can interpret as image or save to disk.
+    func fetchFileBlob(commit sha: String, rawPath: Data) async throws -> Data {
+        try validateSHA(sha)
+        let pathStr = try validateBlobPath(rawPath)
+        // <sha>:<path> (colon syntax) retrieves the blob at that exact tree entry.
+        // maxOutputBytes: 50MB — large enough for typical images, prevents OOM on oversized blobs.
+        return try await runCore(["show", "\(sha):\(pathStr)"], maxOutputBytes: 52_428_800)
+    }
+
     // Accepts raw path bytes (from DiffFile.rawNewPath) to handle non-UTF-8 filenames.
     // Path is passed via argv as `-- <path>`; GIT_LITERAL_PATHSPECS=1 prevents ':' magic.
     func fetchDiffContent(commit sha: String, rawPath: Data) async throws -> String {
@@ -514,13 +566,7 @@ actor GitService {
         // components should never appear in legitimate repos, but guard anyway.
         // rawPath is checked for NUL (would split the argv entry); pathStr is checked for
         // traversal sequences (the decoded string is what git receives as the pathspec).
-        let pathStr = rawPath.utf8OrLatin1
-        guard !rawPath.contains(0),
-              !pathStr.isEmpty,
-              !pathStr.hasPrefix("/"),
-              !pathStr.components(separatedBy: "/").contains("..") else {
-            throw GitError.parseError("Invalid file path")
-        }
+        let pathStr = try validateBlobPath(rawPath)
         // --format= suppresses the commit header so only the diff body is returned.
         // --diff-merges=first-parent: unified diff for merge commits (combined diff @@@ breaks parser).
         // GIT_LITERAL_PATHSPECS=1 (set in runCore env) prevents ':'-prefixed pathspec magic.

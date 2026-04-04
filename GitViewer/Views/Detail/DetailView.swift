@@ -69,6 +69,8 @@ struct DetailView: View {
                 ProgressView()
             } else if let error = vm.errorMessage, vm.diffHunks.isEmpty {
                 EmptyStateView(icon: "exclamationmark.triangle", message: error)
+            } else if vm.binaryPreviewData != nil || vm.binaryPreviewFileData != nil {
+                binaryPreviewArea(vm: vm)
             } else if let info = vm.diffInfoMessage {
                 EmptyStateView(icon: "doc.badge.ellipsis", message: info)
             } else if vm.diffHunks.isEmpty {
@@ -81,5 +83,14 @@ struct DetailView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    @ViewBuilder
+    private func binaryPreviewArea(vm: DetailViewModel) -> some View {
+        if let data = vm.binaryPreviewData {
+            BinaryImagePreview(data: data, filename: vm.binaryPreviewFilename ?? "")
+        } else if let data = vm.binaryPreviewFileData {
+            BinaryFilePreview(data: data, filename: vm.binaryPreviewFilename ?? "")
+        }
     }
 }
