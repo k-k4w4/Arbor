@@ -125,11 +125,13 @@ struct FileTreeView: View {
         var leafFiles: [DiffFile] = []
 
         for file in files {
-            let relativePath = pathPrefix.isEmpty
-                ? file.newPath
-                : (file.newPath.hasPrefix(pathPrefix)
-                    ? String(file.newPath.dropFirst(pathPrefix.count))
-                    : file.newPath)
+            let relativePath: String
+            if pathPrefix.isEmpty {
+                relativePath = file.newPath
+            } else {
+                guard file.newPath.hasPrefix(pathPrefix) else { continue }
+                relativePath = String(file.newPath.dropFirst(pathPrefix.count))
+            }
 
             if let slashRange = relativePath.range(of: "/") {
                 let dirName = String(relativePath[..<slashRange.lowerBound])
@@ -143,7 +145,7 @@ struct FileTreeView: View {
 
         for dir in dirMap.keys.sorted() {
             let newPrefix = pathPrefix + dir + "/"
-            let children = buildTree(files: dirMap[dir]!, pathPrefix: newPrefix)
+            let children = buildTree(files: dirMap[dir] ?? [], pathPrefix: newPrefix)
             nodes.append(FileTreeNode(id: "dir:\(newPrefix)", name: dir, file: nil, children: children))
         }
 

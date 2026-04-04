@@ -5,7 +5,6 @@ private struct FileListToggleButton: View {
     @State private var isHovered = false
 
     var body: some View {
-        @Bindable var settings = settings
         Image(systemName: settings.showFileTree ? "list.bullet" : "list.bullet.indent")
             .font(.caption)
             .foregroundStyle(isHovered ? Color.primary : Color.secondary)
