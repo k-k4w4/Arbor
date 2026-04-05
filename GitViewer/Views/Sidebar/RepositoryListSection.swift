@@ -24,6 +24,14 @@ struct RepositoryListSection: View {
                         .listRowInsets(EdgeInsets())
                         .listRowBackground(isSelected ? Color.accentColor.opacity(0.15) : Color.clear)
                         .contextMenu {
+                            let repos = appViewModel.repositories
+                            if repos.first?.id != repo.id {
+                                Button("上に移動") { appViewModel.moveRepositoryUp(repo) }
+                            }
+                            if repos.last?.id != repo.id {
+                                Button("下に移動") { appViewModel.moveRepositoryDown(repo) }
+                            }
+                            Divider()
                             Button("削除", role: .destructive) {
                                 addError = nil
                                 appViewModel.removeRepository(repo)

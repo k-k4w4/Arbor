@@ -49,6 +49,18 @@ final class AppViewModel {
         }
     }
 
+    func moveRepositoryUp(_ repo: Repository) {
+        guard let i = repositories.firstIndex(where: { $0.id == repo.id }), i > 0 else { return }
+        repositories.swapAt(i, i - 1)
+        RepositoryStore.shared.save(repositories)
+    }
+
+    func moveRepositoryDown(_ repo: Repository) {
+        guard let i = repositories.firstIndex(where: { $0.id == repo.id }), i < repositories.count - 1 else { return }
+        repositories.swapAt(i, i + 1)
+        RepositoryStore.shared.save(repositories)
+    }
+
     func removeRepository(_ repo: Repository) {
         repositories.removeAll { $0.id == repo.id }
         RepositoryStore.shared.save(repositories)
