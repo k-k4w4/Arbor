@@ -22,6 +22,10 @@ final class DetailViewModel {
     private var fileTask: Task<Void, Never>?
     private var diffTask: Task<Void, Never>?
     private var bodyTask: Task<Void, Never>?
+    // Monotonically increasing counters. Each load()/selectFile() call increments its
+    // counter so tasks can detect if a newer call has superseded them.
+    private var fileGeneration: Int = 0
+    private var diffGeneration: Int = 0
 
     func cancelAll() {
         fileTask?.cancel()
@@ -61,13 +65,23 @@ final class DetailViewModel {
         isLoadingDiff = false
         errorMessage = nil
         diffInfoMessage = nil
+        fileGeneration += 1
+        let fileGen = fileGeneration
 
         if commit.isWorkingTreeSentinel {
-            loadWorkingTree(service: service, commitID: commit.id)
+            loadWorkingTree(service: service, commitID: commit.id, generation: fileGen)
             return
         }
 
         fileTask = Task { [weak self] in
+            defer {
+                // Safety net: if this task exits without resetting isLoadingFiles (e.g. guard
+                // fired due to a transient cancellation flag) and no newer load() has run,
+                // reset the stuck loading state so the view doesn't spin indefinitely.
+                if let s = self, s.fileGeneration == fileGen, s.isLoadingFiles {
+                    s.isLoadingFiles = false
+                }
+            }
             do {
                 let rawOutput = try await service.fetchDiff(commit: commit.id)
                 // Verify commit hasn't changed since the request was made.
@@ -81,7 +95,6 @@ final class DetailViewModel {
                     self.selectFile(first)
                 }
             } catch is CancellationError {
-                // clear() or the next load() manages isLoadingFiles; don't overwrite here.
                 return
             } catch {
                 guard let self, self.commit?.id == commit.id else { return }
@@ -102,8 +115,13 @@ final class DetailViewModel {
         }
     }
 
-    private func loadWorkingTree(service: GitService, commitID: String) {
+    private func loadWorkingTree(service: GitService, commitID: String, generation: Int) {
         fileTask = Task { [weak self] in
+            defer {
+                if let s = self, s.fileGeneration == generation, s.isLoadingFiles {
+                    s.isLoadingFiles = false
+                }
+            }
             do {
                 let data = try await service.fetchWorkingTreeStatus()
                 guard let self, !Task.isCancelled, self.commit?.id == commitID else { return }
@@ -124,6 +142,22 @@ final class DetailViewModel {
         }
     }
 
+    func selectNextFile() {
+        guard !changedFiles.isEmpty else { return }
+        guard let current = selectedFile,
+              let idx = changedFiles.firstIndex(where: { $0.id == current.id }),
+              idx + 1 < changedFiles.count else { return }
+        selectFile(changedFiles[idx + 1])
+    }
+
+    func selectPreviousFile() {
+        guard !changedFiles.isEmpty else { return }
+        guard let current = selectedFile,
+              let idx = changedFiles.firstIndex(where: { $0.id == current.id }),
+              idx > 0 else { return }
+        selectFile(changedFiles[idx - 1])
+    }
+
     func selectFile(_ file: DiffFile) {
         guard let service = gitService, let commit = commit else { return }
         let commitID = commit.id
@@ -137,7 +171,14 @@ final class DetailViewModel {
         binaryPreviewData = nil
         binaryPreviewFileData = nil
         binaryPreviewFilename = nil
+        diffGeneration += 1
+        let diffGen = diffGeneration
         diffTask = Task { [weak self] in
+            defer {
+                if let s = self, s.diffGeneration == diffGen, s.isLoadingDiff {
+                    s.isLoadingDiff = false
+                }
+            }
             do {
                 // Untracked files: read from disk and display as all-added lines
                 if file.status == .untracked {

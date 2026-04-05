@@ -80,6 +80,8 @@ final class CommitListViewModel {
                 isLoading = true
                 loadTask = Task { [weak self] in await self?.fetchPage() }
             }
+        } else if looksLikeSHA(query) {
+            jumpToSHA(query)
         } else {
             loadTask?.cancel()
             // Suppress working tree sentinel during search (search results come from git log, not working tree).
@@ -93,6 +95,41 @@ final class CommitListViewModel {
                 }
                 await self?.performGlobalSearch(query: query)
             }
+        }
+    }
+
+    private func looksLikeSHA(_ s: String) -> Bool {
+        s.count >= 7 && s.count <= 40 && s.allSatisfy { $0.isHexDigit }
+    }
+
+    private func jumpToSHA(_ sha: String) {
+        loadTask?.cancel()
+        filteredCommits = []
+        selectedCommit = nil
+        errorMessage = nil
+        isLoading = true
+        searchTask = Task { [weak self] in
+            do { try await Task.sleep(nanoseconds: 300_000_000) } catch { return }
+            await self?.performSHALookup(sha: sha)
+        }
+    }
+
+    private func performSHALookup(sha: String) async {
+        guard let service = gitService else { return }
+        do {
+            let output = try await service.fetchCommitBySHA(sha)
+            guard searchQuery == sha else { return }
+            let (found, _) = await parseAndCountLog(output)
+            guard searchQuery == sha else { return }
+            filteredCommits = found
+            selectedCommit = found.first
+            isLoading = false
+        } catch is CancellationError {
+        } catch {
+            guard searchQuery == sha else { return }
+            // Don't show git error text; let the empty-state view handle "no results".
+            filteredCommits = []
+            isLoading = false
         }
     }
 

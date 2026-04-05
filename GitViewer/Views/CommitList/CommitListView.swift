@@ -9,7 +9,6 @@ private struct CommitLoadKey: Equatable {
 struct CommitListView: View {
     @Environment(AppViewModel.self) private var appViewModel
     @Environment(AppSettings.self) private var settings
-
     private var commitLoadKey: CommitLoadKey {
         CommitLoadKey(
             repositoryID: appViewModel.selectedRepository?.id,

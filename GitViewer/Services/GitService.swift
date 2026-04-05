@@ -418,6 +418,20 @@ actor GitService {
         ], maxOutputBytes: 20_971_520)
     }
 
+    // Returns the log entry for a single commit by SHA (full or abbreviated).
+    // Uses the same format as fetchLog so GitLogParser.parse can consume it.
+    func fetchCommitBySHA(_ sha: String) async throws -> String {
+        try validateSHA(sha)
+        let format = "%H%x00%P%x00%an%x00%ae%x00%ai%x00%cn%x00%ce%x00%ci%x00%s%x00%D%x00%x1E"
+        return try await run([
+            "log", sha,
+            "--format=\(format)",
+            "--decorate=full",
+            "-n", "1",
+            "--"
+        ], maxOutputBytes: 1_048_576)
+    }
+
     // Returns the commit body (everything after the first blank line), trimmed.
     // Returns empty string if the commit has no body.
     func fetchCommitBody(sha: String) async throws -> String {

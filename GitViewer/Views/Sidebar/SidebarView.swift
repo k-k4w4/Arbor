@@ -3,7 +3,6 @@ import SwiftUI
 struct SidebarView: View {
     @Environment(AppViewModel.self) private var appViewModel
     @Environment(AppSettings.self) private var settings
-
     var body: some View {
         List {
             RepositoryListSection(

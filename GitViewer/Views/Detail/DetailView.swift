@@ -30,6 +30,7 @@ private struct DetailTaskKey: Equatable {
 struct DetailView: View {
     @Environment(AppViewModel.self) private var appViewModel
     @Environment(AppSettings.self) private var settings
+    @FocusState private var fileListFocused: Bool
 
     private var taskKey: DetailTaskKey {
         DetailTaskKey(
@@ -73,12 +74,23 @@ struct DetailView: View {
                             fileListHeader
                             Divider()
                             if settings.showFileTree {
-                                FileTreeView(files: vm.changedFiles)
+                                FileTreeView(files: vm.changedFiles, isFocused: fileListFocused)
                             } else {
-                                ChangedFilesList(files: vm.changedFiles)
+                                ChangedFilesList(files: vm.changedFiles, isFocused: fileListFocused)
                             }
                         }
                         .frame(minHeight: 60, idealHeight: 160)
+                        .focusable()
+                        .focused($fileListFocused)
+                        .focusEffectDisabled()
+                        .onKeyPress(.upArrow) {
+                            appViewModel.detailVM?.selectPreviousFile()
+                            return .handled
+                        }
+                        .onKeyPress(.downArrow) {
+                            appViewModel.detailVM?.selectNextFile()
+                            return .handled
+                        }
                         diffArea(vm: vm)
                             .frame(minHeight: 80)
                     }

@@ -18,6 +18,7 @@ private struct VisibleRow: Identifiable {
 struct FileTreeView: View {
     @Environment(AppViewModel.self) private var appViewModel
     let files: [DiffFile]
+    var isFocused: Bool = false
 
     @State private var collapsed: Set<String> = []
 
@@ -89,6 +90,12 @@ struct FileTreeView: View {
         // Invariant: non-directory nodes always have a non-nil file (enforced by buildTree).
         if let file = node.file {
             let isSelected = appViewModel.detailVM?.selectedFile?.id == file.id
+            let rowBg: Color = isSelected
+                ? (isFocused
+                    ? Color(NSColor.selectedContentBackgroundColor)
+                    : Color(NSColor.unemphasizedSelectedContentBackgroundColor))
+                : Color.clear
+            let textFg: Color = (isSelected && isFocused) ? Color(NSColor.selectedMenuItemTextColor) : .primary
             HStack(spacing: 4) {
                 // depth indent + chevron alignment offset (10 chevron + 4 spacing = 14)
                 Color.clear.frame(width: CGFloat(depth) * 12 + 14)
@@ -109,10 +116,11 @@ struct FileTreeView: View {
                     .lineLimit(1)
                     .truncationMode(.middle)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .foregroundStyle(textFg)
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
-            .background(isSelected ? Color.accentColor.opacity(0.12) : Color.clear)
+            .background(rowBg)
             .contentShape(Rectangle())
             .onTapGesture {
                 appViewModel.detailVM?.selectFile(file)

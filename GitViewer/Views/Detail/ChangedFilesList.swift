@@ -3,6 +3,7 @@ import SwiftUI
 struct ChangedFilesList: View {
     @Environment(AppViewModel.self) private var appViewModel
     let files: [DiffFile]
+    var isFocused: Bool = false
 
     var body: some View {
         ScrollView {
@@ -17,6 +18,12 @@ struct ChangedFilesList: View {
     @ViewBuilder
     private func fileRow(_ file: DiffFile) -> some View {
         let isSelected = appViewModel.detailVM?.selectedFile?.id == file.id
+        let rowBg: Color = isSelected
+            ? (isFocused
+                ? Color(NSColor.selectedContentBackgroundColor)
+                : Color(NSColor.unemphasizedSelectedContentBackgroundColor))
+            : Color.clear
+        let textFg: Color = (isSelected && isFocused) ? Color(NSColor.selectedMenuItemTextColor) : .primary
         HStack(spacing: 6) {
             FileStatusBadge(status: file.status)
             if let staged = file.staged {
@@ -35,10 +42,11 @@ struct ChangedFilesList: View {
                 .lineLimit(1)
                 .truncationMode(.middle)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .foregroundStyle(textFg)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
-        .background(isSelected ? Color.accentColor.opacity(0.12) : Color.clear)
+        .background(rowBg)
         .contentShape(Rectangle())
         .onTapGesture {
             appViewModel.detailVM?.selectFile(file)
