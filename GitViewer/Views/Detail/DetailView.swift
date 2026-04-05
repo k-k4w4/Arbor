@@ -59,7 +59,12 @@ struct DetailView: View {
     private var contentView: some View {
         if let vm = appViewModel.detailVM, let commit = vm.commit {
             VStack(spacing: 0) {
-                CommitInfoHeader(commit: commit, commitBody: vm.commitBody, showAbsoluteDates: settings.showAbsoluteDates)
+                CommitInfoHeader(
+                    commit: commit,
+                    commitBody: vm.commitBody,
+                    showAbsoluteDates: settings.showAbsoluteDates,
+                    onJumpToSHA: { sha in appViewModel.commitListVM?.jumpToCommit(sha: sha) }
+                )
                 Divider()
                 if vm.isLoadingFiles {
                     ProgressView()

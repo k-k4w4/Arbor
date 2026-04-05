@@ -25,8 +25,10 @@ final class AppViewModel {
         if let msg = result.error {
             errorMessage = msg
         }
-        if let first = repositories.first {
-            selectRepository(first)
+        let savedID = UserDefaults.standard.string(forKey: "lastSelectedRepositoryID").flatMap { UUID(uuidString: $0) }
+        let startRepo = repositories.first(where: { $0.id == savedID }) ?? repositories.first
+        if let repo = startRepo {
+            selectRepository(repo)
         }
     }
 
@@ -102,8 +104,12 @@ final class AppViewModel {
         detailVM?.cancelAll()
         selectedRepository = repo
         gitService = service
+        UserDefaults.standard.set(repo.id.uuidString, forKey: "lastSelectedRepositoryID")
         let sidebar = SidebarViewModel()
         sidebarVM = sidebar
+        if let savedRefName = UserDefaults.standard.string(forKey: "lastRef_\(repo.id)") {
+            sidebar.selectedRef = GitRef(name: savedRefName, shortName: savedRefName, sha: "", refType: .localBranch, isHead: false)
+        }
         commitListVM = CommitListViewModel()
         detailVM = DetailViewModel()
         sidebar.scheduleLoad(service: service)

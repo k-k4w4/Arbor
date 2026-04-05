@@ -1,9 +1,28 @@
 import SwiftUI
+import AppKit
+
+private struct ParentSHALink: View {
+    let sha: String
+    let onTap: () -> Void
+    @State private var isHovered = false
+
+    var body: some View {
+        Text(String(sha.prefix(7)))
+            .font(.caption.monospaced())
+            .foregroundStyle(isHovered ? Color.accentColor : Color.secondary)
+            .onHover { isHovered = $0 }
+            .onTapGesture { onTap() }
+            .help("親コミットへジャンプ")
+    }
+}
 
 struct CommitInfoHeader: View {
     let commit: Commit
     let commitBody: String
     let showAbsoluteDates: Bool
+    var onJumpToSHA: ((String) -> Void)? = nil
+    @State private var shaHovered = false
+    @State private var shaCopied = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -28,9 +47,36 @@ struct CommitInfoHeader: View {
                         }
 
                         HStack(spacing: 12) {
-                            Label(commit.shortSHA, systemImage: "number")
-                                .font(.caption.monospaced())
-                                .foregroundStyle(.secondary)
+                            // SHA — click to copy full SHA
+                            HStack(spacing: 4) {
+                                Image(systemName: shaCopied ? "checkmark" : "number")
+                                    .font(.caption)
+                                Text(shaCopied ? "コピーしました" : commit.shortSHA)
+                                    .font(.caption.monospaced())
+                            }
+                            .foregroundStyle(shaCopied ? Color.green : (shaHovered ? .primary : .secondary))
+                            .padding(.horizontal, 3)
+                            .padding(.vertical, 1)
+                            .background(
+                                (shaCopied || shaHovered) ? Color.primary.opacity(0.08) : Color.clear,
+                                in: RoundedRectangle(cornerRadius: 3)
+                            )
+                            .animation(.easeInOut(duration: 0.15), value: shaCopied)
+                            .onHover { isHovered in
+                                if !shaCopied { shaHovered = isHovered }
+                            }
+                            .onTapGesture {
+                                NSPasteboard.general.clearContents()
+                                NSPasteboard.general.setString(commit.id, forType: .string)
+                                shaHovered = false
+                                shaCopied = true
+                                Task {
+                                    try? await Task.sleep(nanoseconds: 1_500_000_000)
+                                    shaCopied = false
+                                }
+                            }
+                            .help("クリックでフルSHAをコピー")
+
                             Label(commit.authorName, systemImage: "person")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
@@ -46,6 +92,18 @@ struct CommitInfoHeader: View {
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                     .lineLimit(1)
+                            }
+                        }
+
+                        // Parent SHA links
+                        if let onJumpToSHA, !commit.parentSHAs.isEmpty {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.turn.up.left")
+                                    .font(.caption2)
+                                    .foregroundStyle(.tertiary)
+                                ForEach(commit.parentSHAs.prefix(2), id: \.self) { sha in
+                                    ParentSHALink(sha: sha) { onJumpToSHA(sha) }
+                                }
                             }
                         }
                     }

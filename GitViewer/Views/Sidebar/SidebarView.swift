@@ -25,6 +25,9 @@ struct SidebarView: View {
                 let allRefs = vm.localBranches + vm.remoteBranches + vm.tags + vm.stashes
                 guard let ref = allRefs.first(where: { $0.id == id }) else { return }
                 vm.selectedRef = ref
+                if let repoID = appViewModel.selectedRepository?.id {
+                    UserDefaults.standard.set(ref.name, forKey: "lastRef_\(repoID)")
+                }
             }
         )
     }
