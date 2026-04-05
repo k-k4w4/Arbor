@@ -49,6 +49,11 @@ final class AppViewModel {
         }
     }
 
+    func moveRepositories(from source: IndexSet, to destination: Int) {
+        repositories.move(fromOffsets: source, toOffset: destination)
+        RepositoryStore.shared.save(repositories)
+    }
+
     func moveRepositoryUp(_ repo: Repository) {
         guard let i = repositories.firstIndex(where: { $0.id == repo.id }), i > 0 else { return }
         repositories.swapAt(i, i - 1)

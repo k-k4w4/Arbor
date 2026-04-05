@@ -2,12 +2,11 @@ import SwiftUI
 
 struct BranchCell: View {
     let ref: GitRef
-    let isSelected: Bool
 
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: icon)
-                .foregroundStyle(isSelected ? Color.accentColor : .secondary)
+                .foregroundStyle(.secondary)
                 .frame(width: 14)
             Text(ref.shortName)
                 .lineLimit(1)
