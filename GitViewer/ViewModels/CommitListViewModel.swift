@@ -102,16 +102,33 @@ final class CommitListViewModel {
         s.count >= 7 && s.count <= 40 && s.allSatisfy { $0.isHexDigit }
     }
 
-    // Public: direct jump without debounce (used by parent commit links)
+    // Public: direct jump without touching searchQuery (used by parent commit links).
+    // Does NOT go through searchQueryChanged/onChange to avoid double-firing.
     func jumpToCommit(sha: String) {
-        searchQuery = sha
         loadTask?.cancel()
         searchTask?.cancel()
         filteredCommits = []
         selectedCommit = nil
         errorMessage = nil
         isLoading = true
-        searchTask = Task { [weak self] in await self?.performSHALookup(sha: sha) }
+        searchTask = Task { [weak self] in await self?.fetchAndSelectCommit(sha: sha) }
+    }
+
+    private func fetchAndSelectCommit(sha: String) async {
+        guard let service = gitService else { return }
+        do {
+            let output = try await service.fetchCommitBySHA(sha)
+            guard !Task.isCancelled else { return }
+            let (found, _) = await parseAndCountLog(output)
+            guard !Task.isCancelled else { return }
+            filteredCommits = found
+            selectedCommit = found.first
+            isLoading = false
+        } catch is CancellationError {
+        } catch {
+            filteredCommits = []
+            isLoading = false
+        }
     }
 
     private func jumpToSHA(_ sha: String) {

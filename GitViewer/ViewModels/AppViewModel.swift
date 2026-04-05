@@ -108,7 +108,8 @@ final class AppViewModel {
         let sidebar = SidebarViewModel()
         sidebarVM = sidebar
         if let savedRefName = UserDefaults.standard.string(forKey: "lastRef_\(repo.id)") {
-            sidebar.selectedRef = GitRef(name: savedRefName, shortName: savedRefName, sha: "", refType: .localBranch, isHead: false)
+            let short = savedRefName.components(separatedBy: "/").last ?? savedRefName
+            sidebar.selectedRef = GitRef(name: savedRefName, shortName: short, sha: "", refType: .localBranch, isHead: false)
         }
         commitListVM = CommitListViewModel()
         detailVM = DetailViewModel()

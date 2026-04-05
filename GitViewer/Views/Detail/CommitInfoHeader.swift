@@ -70,10 +70,11 @@ struct CommitInfoHeader: View {
                                 NSPasteboard.general.setString(commit.id, forType: .string)
                                 shaHovered = false
                                 shaCopied = true
-                                Task {
-                                    try? await Task.sleep(nanoseconds: 1_500_000_000)
-                                    shaCopied = false
-                                }
+                            }
+                            .task(id: shaCopied) {
+                                guard shaCopied else { return }
+                                try? await Task.sleep(nanoseconds: 1_500_000_000)
+                                shaCopied = false
                             }
                             .help("クリックでフルSHAをコピー")
 
