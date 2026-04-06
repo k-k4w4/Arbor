@@ -9,6 +9,7 @@ final class DetailViewModel {
     var changedFiles: [DiffFile] = []
     var selectedFile: DiffFile?
     var diffHunks: [DiffHunk] = []
+    var currentRawDiff: String?
     var isLoadingFiles: Bool = false
     var isLoadingDiff: Bool = false
     var errorMessage: String?
@@ -42,6 +43,7 @@ final class DetailViewModel {
         changedFiles = []
         selectedFile = nil
         diffHunks = []
+        currentRawDiff = nil
         isLoadingFiles = false
         isLoadingDiff = false
         errorMessage = nil
@@ -165,6 +167,7 @@ final class DetailViewModel {
         diffTask?.cancel()
         selectedFile = file
         diffHunks = []
+        currentRawDiff = nil
         diffInfoMessage = nil
         errorMessage = nil
         isLoadingDiff = true
@@ -220,6 +223,7 @@ final class DetailViewModel {
                 let hasBinaryPreview = self.binaryPreviewData != nil || self.binaryPreviewFileData != nil
                 self.diffInfoMessage = hasBinaryPreview ? nil : result.infoMessage
                 self.diffHunks = result.hunks
+                if !result.hunks.isEmpty { self.currentRawDiff = output }
                 self.isLoadingDiff = false
             } catch is CancellationError {
                 return

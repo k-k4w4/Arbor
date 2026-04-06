@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(AppViewModel.self) private var appViewModel
+    @State private var isDropTargeted = false
 
     var body: some View {
         Group {
@@ -19,6 +20,26 @@ struct RootView: View {
                         .navigationSplitViewColumnWidth(min: 280, ideal: 360)
                 }
                 .navigationSplitViewStyle(.balanced)
+                .dropDestination(for: URL.self) { urls, _ in
+                    guard let url = urls.first else { return false }
+                    isDropTargeted = false
+                    Task { @MainActor in
+                        do {
+                            try await appViewModel.addRepository(at: url)
+                        } catch {
+                            appViewModel.errorMessage = error.localizedDescription
+                        }
+                    }
+                    return true
+                } isTargeted: { isDropTargeted = $0 }
+                .overlay {
+                    if isDropTargeted {
+                        RoundedRectangle(cornerRadius: 8)
+                            .strokeBorder(Color.accentColor, lineWidth: 2)
+                            .background(Color.accentColor.opacity(0.05), in: RoundedRectangle(cornerRadius: 8))
+                            .allowsHitTesting(false)
+                    }
+                }
             }
         }
         .navigationTitle(appViewModel.windowTitle)

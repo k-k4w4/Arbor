@@ -1,4 +1,36 @@
 import SwiftUI
+import AppKit
+
+private struct DiffCopyButton: View {
+    let rawDiff: String
+    @State private var copied = false
+    @State private var isHovered = false
+
+    var body: some View {
+        Image(systemName: copied ? "checkmark" : "doc.on.doc")
+            .font(.caption)
+            .foregroundStyle(copied ? Color.green : (isHovered ? Color.primary : Color.secondary))
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .background(
+                (isHovered || copied) ? Color.primary.opacity(0.08) : Color.clear,
+                in: RoundedRectangle(cornerRadius: 4)
+            )
+            .contentShape(Rectangle())
+            .onHover { isHovered = $0 }
+            .onTapGesture {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(rawDiff, forType: .string)
+                copied = true
+            }
+            .task(id: copied) {
+                guard copied else { return }
+                try? await Task.sleep(nanoseconds: 1_500_000_000)
+                copied = false
+            }
+            .help("diff をコピー")
+    }
+}
 
 private struct FileListToggleButton: View {
     @Environment(AppSettings.self) private var settings
@@ -133,9 +165,22 @@ struct DetailView: View {
             } else if vm.diffHunks.isEmpty {
                 EmptyStateView(icon: "doc.text", message: "差分がありません")
             } else {
-                ScrollView {
-                    UnifiedDiffView(hunks: vm.diffHunks)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                VStack(spacing: 0) {
+                    if let rawDiff = vm.currentRawDiff {
+                        HStack {
+                            Spacer()
+                            DiffCopyButton(rawDiff: rawDiff)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 3)
+                        }
+                        .frame(height: 24)
+                        .background(.bar)
+                        Divider()
+                    }
+                    ScrollView {
+                        UnifiedDiffView(hunks: vm.diffHunks)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
             }
         }

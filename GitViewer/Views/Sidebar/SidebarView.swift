@@ -80,8 +80,7 @@ struct SidebarView: View {
                         }
                     }
                     if !vm.remoteBranches.isEmpty {
-                        BranchListSection(
-                            title: "REMOTES",
+                        RemotesListSection(
                             refs: vm.remoteBranches,
                             limit: vm.remoteBranchesLimit,
                             isCollapsed: settings.isRemotesCollapsed,
