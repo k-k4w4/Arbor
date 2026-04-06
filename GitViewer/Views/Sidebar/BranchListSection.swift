@@ -7,6 +7,8 @@ struct RemotesListSection: View {
     let onToggle: () -> Void
     let onLoadMore: () -> Void
 
+    @State private var collapsedRemotes: Set<String> = []
+
     private struct RemoteGroup: Identifiable {
         let remote: String
         let refs: [GitRef]
@@ -32,16 +34,18 @@ struct RemotesListSection: View {
             if !isCollapsed {
                 ForEach(groups) { group in
                     remoteHeader(group.remote)
-                    ForEach(group.refs) { ref in
-                        BranchCell(ref: ref)
-                            .tag(ref.id)
-                            .listRowInsets(EdgeInsets(top: 4, leading: 24, bottom: 4, trailing: 8))
-                            .contextMenu {
-                                Button("名前をコピー") {
-                                    NSPasteboard.general.clearContents()
-                                    NSPasteboard.general.setString(ref.shortName, forType: .string)
+                    if !collapsedRemotes.contains(group.remote) {
+                        ForEach(group.refs) { ref in
+                            BranchCell(ref: ref)
+                                .tag(ref.id)
+                                .listRowInsets(EdgeInsets(top: 4, leading: 24, bottom: 4, trailing: 8))
+                                .contextMenu {
+                                    Button("名前をコピー") {
+                                        NSPasteboard.general.clearContents()
+                                        NSPasteboard.general.setString(ref.shortName, forType: .string)
+                                    }
                                 }
-                            }
+                        }
                     }
                 }
                 if refs.count > limit {
@@ -62,10 +66,15 @@ struct RemotesListSection: View {
 
     @ViewBuilder
     private func remoteHeader(_ remote: String) -> some View {
+        let isGroupCollapsed = collapsedRemotes.contains(remote)
         HStack(spacing: 4) {
+            Image(systemName: isGroupCollapsed ? "chevron.right" : "chevron.down")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .frame(width: 10)
             Image(systemName: "cloud")
                 .font(.caption2)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(.secondary)
             Text(remote)
                 .font(.caption2.bold())
                 .foregroundStyle(.secondary)
@@ -76,9 +85,14 @@ struct RemotesListSection: View {
         .listRowSeparator(.hidden)
         .listRowInsets(EdgeInsets(top: 6, leading: 0, bottom: 0, trailing: 0))
         .listRowBackground(Color.clear)
-        // Absorb tap so clicking the header doesn't deselect the current branch
         .contentShape(Rectangle())
-        .onTapGesture {}
+        .onTapGesture {
+            if isGroupCollapsed {
+                collapsedRemotes.remove(remote)
+            } else {
+                collapsedRemotes.insert(remote)
+            }
+        }
     }
 }
 

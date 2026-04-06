@@ -32,6 +32,27 @@ private struct DiffCopyButton: View {
     }
 }
 
+private struct SplitDiffToggleButton: View {
+    @Environment(AppSettings.self) private var settings
+    @State private var isHovered = false
+
+    var body: some View {
+        Image(systemName: settings.showSplitDiff ? "rectangle" : "rectangle.split.2x1")
+            .font(.caption)
+            .foregroundStyle(isHovered ? Color.primary : Color.secondary)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .background(
+                isHovered ? Color.primary.opacity(0.08) : Color.clear,
+                in: RoundedRectangle(cornerRadius: 4)
+            )
+            .contentShape(Rectangle())
+            .onHover { isHovered = $0 }
+            .onTapGesture { settings.showSplitDiff.toggle() }
+            .help(settings.showSplitDiff ? "Unified diff 表示" : "Split diff 表示")
+    }
+}
+
 private struct FileListToggleButton: View {
     @Environment(AppSettings.self) private var settings
     @State private var isHovered = false
@@ -166,20 +187,25 @@ struct DetailView: View {
                 EmptyStateView(icon: "doc.text", message: "差分がありません")
             } else {
                 VStack(spacing: 0) {
-                    if let rawDiff = vm.currentRawDiff {
-                        HStack {
-                            Spacer()
+                    HStack {
+                        Spacer()
+                        SplitDiffToggleButton()
+                        if let rawDiff = vm.currentRawDiff {
                             DiffCopyButton(rawDiff: rawDiff)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 3)
                         }
-                        .frame(height: 24)
-                        .background(.bar)
-                        Divider()
                     }
+                    .padding(.trailing, 6)
+                    .frame(height: 24)
+                    .background(.bar)
+                    Divider()
                     ScrollView {
-                        UnifiedDiffView(hunks: vm.diffHunks)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        if settings.showSplitDiff {
+                            SplitDiffView(hunks: vm.diffHunks)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        } else {
+                            UnifiedDiffView(hunks: vm.diffHunks)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
                     }
                 }
             }

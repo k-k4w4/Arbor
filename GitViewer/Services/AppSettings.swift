@@ -32,6 +32,9 @@ final class AppSettings {
     var showFileTree: Bool {
         didSet { UserDefaults.standard.set(showFileTree, forKey: "showFileTree") }
     }
+    var showSplitDiff: Bool {
+        didSet { UserDefaults.standard.set(showSplitDiff, forKey: "showSplitDiff") }
+    }
 
     init() {
         appearanceMode = UserDefaults.standard.integer(forKey: "appearanceMode")
@@ -42,6 +45,7 @@ final class AppSettings {
         isTagsCollapsed = UserDefaults.standard.bool(forKey: "isTagsCollapsed")
         isStashesCollapsed = UserDefaults.standard.bool(forKey: "isStashesCollapsed")
         showFileTree = UserDefaults.standard.bool(forKey: "showFileTree")
+        showSplitDiff = UserDefaults.standard.bool(forKey: "showSplitDiff")
         // Apply persisted appearance before the first frame renders.
         applyAppearance()
     }

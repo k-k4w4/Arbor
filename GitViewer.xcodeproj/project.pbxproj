@@ -32,6 +32,7 @@
 		6421AD6EB71BE15385DDD197 /* ChangedFilesList.swift in Sources */ = {isa = PBXBuildFile; fileRef = C310927102F513BECF246CCF /* ChangedFilesList.swift */; };
 		65775D55CB0B06AA18CE7DBB /* String+SHA.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C79C56673330AA0313099EF /* String+SHA.swift */; };
 		6E7AC0D02B84C5CCDA6B499F /* UnifiedDiffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6BBE4163E9BDADD41F16AA1 /* UnifiedDiffView.swift */; };
+		F1A2B3C4D5E6F7A8B9C0D1E2 /* SplitDiffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2B3C4D5E6F7A8B9C0D1E2F3 /* SplitDiffView.swift */; };
 		7B79DCF01616F77444F98CB0 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CBBDE6BCDDB6FEFFD46D1AC /* RootView.swift */; };
 		82AFA659B51C927B80744FA7 /* GitLogParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2462DCA4C06E8DF8F930CC76 /* GitLogParserTests.swift */; };
 		9533B3919E3D6E4D86859D1F /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D11682328CEB558053F2566 /* EmptyStateView.swift */; };
@@ -112,6 +113,7 @@
 		C310927102F513BECF246CCF /* ChangedFilesList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangedFilesList.swift; sourceTree = "<group>"; };
 		C38F6F8602FDC9D77D8838C2 /* RepositoryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryCell.swift; sourceTree = "<group>"; };
 		C6BBE4163E9BDADD41F16AA1 /* UnifiedDiffView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnifiedDiffView.swift; sourceTree = "<group>"; };
+		A2B3C4D5E6F7A8B9C0D1E2F3 /* SplitDiffView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitDiffView.swift; sourceTree = "<group>"; };
 		CEEBD1CD964445E480404F83 /* AppCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCommands.swift; sourceTree = "<group>"; };
 		D553759A068EAB5994874323 /* Date+RelativeFormat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+RelativeFormat.swift"; sourceTree = "<group>"; };
 		E2585050D59A1E77D4758914 /* RepositoryListSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryListSection.swift; sourceTree = "<group>"; };
@@ -230,6 +232,7 @@
 				7CFDE6176F6A56557E0EAF26 /* DetailView.swift */,
 				EEAED189D57246ABCFFCA381 /* FileStatusBadge.swift */,
 				C6BBE4163E9BDADD41F16AA1 /* UnifiedDiffView.swift */,
+				A2B3C4D5E6F7A8B9C0D1E2F3 /* SplitDiffView.swift */,
 			);
 			path = Detail;
 			sourceTree = "<group>";
@@ -439,6 +442,7 @@
 				572FF064FBD496CAF6EBDD7B /* SidebarViewModel.swift in Sources */,
 				65775D55CB0B06AA18CE7DBB /* String+SHA.swift in Sources */,
 				6E7AC0D02B84C5CCDA6B499F /* UnifiedDiffView.swift in Sources */,
+				F1A2B3C4D5E6F7A8B9C0D1E2 /* SplitDiffView.swift in Sources */,
 				53FD5FB994E4E8FEF85E7E09 /* WelcomeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
