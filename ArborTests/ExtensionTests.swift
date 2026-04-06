@@ -1,5 +1,5 @@
 import XCTest
-@testable import GitViewer
+@testable import Arbor
 
 @MainActor
 final class DateRelativeFormatTests: XCTestCase {

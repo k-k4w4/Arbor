@@ -12,7 +12,7 @@ final class AppViewModel {
     var errorMessage: String?
 
     var windowTitle: String {
-        guard let repo = selectedRepository else { return "GitViewer" }
+        guard let repo = selectedRepository else { return "Arbor" }
         let repoName = repo.path.lastPathComponent
         guard let ref = sidebarVM?.selectedRef else { return repoName }
         // Use shortName ("main") not gitRef ("refs/heads/main") for display.

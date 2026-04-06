@@ -1,4 +1,4 @@
-# GitViewer
+# Arbor
 
 macOSネイティブの閲覧専用Gitビューアー。書き込み操作は一切なし。
 
@@ -8,7 +8,7 @@ macOSネイティブの閲覧専用Gitビューアー。書き込み操作は一
 - `@Observable` マクロ（strict concurrency は未適用）
 - Git操作: `Process` クラスで shell 呼び出し（依存ゼロ、libgit2 不使用）
 - サンドボックス: **無効**（entitlements で `app-sandbox = false`）
-- ビルド: `xcodebuild -scheme GitViewer -configuration Debug build`
+- ビルド: `xcodebuild -scheme Arbor -configuration Debug build`
 
 ## アーキテクチャ
 
@@ -26,8 +26,8 @@ AppViewModel (@Observable, @MainActor)
 ## ディレクトリ構成
 
 ```
-GitViewer/
-├── App/           GitViewerApp.swift, AppCommands.swift
+Arbor/
+├── App/           ArborApp.swift, AppCommands.swift
 ├── Models/        Repository, Commit, GitRef(Branch.swift), CommitGraph, DiffFile, DiffHunk
 ├── Services/      GitService(actor), GitLogParser, GitDiffParser, GraphLayoutEngine, RepositoryStore
 ├── ViewModels/    AppViewModel, SidebarViewModel, CommitListViewModel, DetailViewModel
@@ -37,8 +37,8 @@ GitViewer/
 │   ├── CommitList/ CommitListView, CommitRow, CommitGraphView, RefBadge
 │   ├── Detail/    DetailView, CommitInfoHeader, ChangedFilesList, UnifiedDiffView, etc.
 │   └── Shared/    EmptyStateView, LoadingView
-├── Extensions/    Color+GitViewer.swift, Date+RelativeFormat.swift, String+SHA.swift
-└── Resources/     Assets.xcassets, GitViewer.entitlements
+├── Extensions/    Color+Arbor.swift, Date+RelativeFormat.swift, String+SHA.swift
+└── Resources/     Assets.xcassets, Arbor.entitlements
 ```
 
 ## 主要クラス・設計メモ
@@ -84,7 +84,7 @@ GitViewer/
 ### ⌘R リフレッシュ
 - `AppViewModel.refresh()` → commitList の `loadInitial` + sidebar の `load` を並行実行
 - `AppCommands` から `@FocusedValue(\.appViewModel)` 経由で呼び出し
-- `GitViewerApp` の root view に `.focusedValue(\.appViewModel, appViewModel)` が必要
+- `ArborApp` の root view に `.focusedValue(\.appViewModel, appViewModel)` が必要
 
 ### サイドバークリック判定
 - `List(selection:)` を使わず、`listRowInsets(EdgeInsets())` + セル内パディング方式
@@ -92,12 +92,12 @@ GitViewer/
 - `contentShape(Rectangle())` + `onTapGesture` がセル全体（`listRowBackground` と同領域）をカバー
 - リポジトリとブランチは独立した `listRowBackground` でそれぞれハイライト（同時選択可能）
 
-## カラーシステム (`Color+GitViewer.swift`)
+## カラーシステム (`Color+Arbor.swift`)
 
 | 用途 | 色名 |
 |------|------|
-| ローカルブランチ badge | `gitViewerBranch` (accentColor) |
-| タグ badge | `gitViewerTag` (orange) |
+| ローカルブランチ badge | `arborBranch` (accentColor) |
+| タグ badge | `arborTag` (orange) |
 | diff 追加行背景 | `diffAdded` |
 | diff 削除行背景 | `diffDeleted` |
 | hunk ヘッダ背景 | `diffHunk` |
@@ -140,10 +140,10 @@ GitViewer/
 
 ## テスト
 
-`GitViewerTests/` に 81 件のユニットテスト（2026-04-02 時点）。
+`ArborTests/` に 81 件のユニットテスト（2026-04-02 時点）。
 対象: `GitLogParser`, `GitDiffParser`, `GraphLayoutEngine`, `Date+RelativeFormat`, `String+SHA`
 
-実行: `xcodebuild -scheme GitViewer -destination 'platform=macOS' test`
+実行: `xcodebuild -scheme Arbor -destination 'platform=macOS' test`
 
 ## 将来拡張（ロードマップ）
 

@@ -12,7 +12,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 @MainActor
 @main
-struct GitViewerApp: App {
+struct ArborApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @State private var appViewModel = AppViewModel()
     @State private var settings = AppSettings()

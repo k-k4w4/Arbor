@@ -14,10 +14,10 @@ struct FileStatusBadge: View {
 
     private var badgeColor: Color {
         switch status {
-        case .modified: return .gitViewerModified
-        case .added: return .gitViewerAdded
-        case .deleted: return .gitViewerDeleted
-        case .renamed: return .gitViewerRenamed
+        case .modified: return .arborModified
+        case .added: return .arborAdded
+        case .deleted: return .arborDeleted
+        case .renamed: return .arborRenamed
         case .copied: return .teal
         case .typeChanged: return .orange
         case .unmerged: return .red

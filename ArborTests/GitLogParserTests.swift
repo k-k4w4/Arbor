@@ -1,5 +1,5 @@
 import XCTest
-@testable import GitViewer
+@testable import Arbor
 
 final class GitLogParserTests: XCTestCase {
     // 40-char hex SHAs

@@ -81,8 +81,8 @@ struct UnifiedDiffView: View {
 
     private func prefixColor(_ type: DiffLineType) -> Color {
         switch type {
-        case .added: return .gitViewerAdded
-        case .deleted: return .gitViewerDeleted
+        case .added: return .arborAdded
+        case .deleted: return .arborDeleted
         default: return .secondary
         }
     }

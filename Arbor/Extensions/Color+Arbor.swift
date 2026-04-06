@@ -2,12 +2,12 @@ import SwiftUI
 
 extension Color {
     // Semantic colors for refs
-    static let gitViewerBranch = Color.accentColor
-    static let gitViewerTag = Color.orange
-    static let gitViewerAdded = Color.green
-    static let gitViewerDeleted = Color.red
-    static let gitViewerModified = Color.blue
-    static let gitViewerRenamed = Color.orange
+    static let arborBranch = Color.accentColor
+    static let arborTag = Color.orange
+    static let arborAdded = Color.green
+    static let arborDeleted = Color.red
+    static let arborModified = Color.blue
+    static let arborRenamed = Color.orange
 
     // Diff background colors
     static let diffAdded = Color.green.opacity(0.15)

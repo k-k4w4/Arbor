@@ -27,9 +27,9 @@ struct RefBadge: View {
 
     private var badgeColor: Color {
         switch ref.refType {
-        case .localBranch:  return .gitViewerBranch
+        case .localBranch:  return .arborBranch
         case .remoteBranch: return .gray
-        case .tag:          return .gitViewerTag
+        case .tag:          return .arborTag
         case .stash:        return .gray
         }
     }

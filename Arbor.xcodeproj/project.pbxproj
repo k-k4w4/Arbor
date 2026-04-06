@@ -1,0 +1,708 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0241A2F0A2E3C9E43CDC1354 /* SplitDiffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1FB379F3B7D6E859A6BAF5B /* SplitDiffView.swift */; };
+		08201A804DF1ABB3F0DF328F /* ArborApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7F8C44978F0FAC7B836F8BC /* ArborApp.swift */; };
+		090978AA7FB0E959756E2517 /* CommitGraph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B60185DA8DE888BF9FAAAC3 /* CommitGraph.swift */; };
+		137351C3B6F977C0393487F8 /* ExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D5C2D60B51A42DBDB08819D /* ExtensionTests.swift */; };
+		151B505C5301C3138382CF86 /* Branch.swift in Sources */ = {isa = PBXBuildFile; fileRef = E44CBC849A1DCE165BC292FC /* Branch.swift */; };
+		18B97F1FA577EAC92EE7B703 /* UnifiedDiffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C2C562C373737670CBFBE5E /* UnifiedDiffView.swift */; };
+		1D729C190F180BAD08AB0354 /* FileStatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2786C49D88760974A79A80DD /* FileStatusBadge.swift */; };
+		2660971C11BFEFCCEFB60A86 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E21E7884FA34E8DD0070C62 /* EmptyStateView.swift */; };
+		29CA3EAD2F0E60CC74A2191A /* Date+RelativeFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7828BA297F44C74BE0003EE4 /* Date+RelativeFormat.swift */; };
+		3524CD668A4395D43BA3F88D /* Commit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 730D8E7FFE1E1C5B70A3DDCD /* Commit.swift */; };
+		3A52884A0B1B9D5771785B32 /* CommitGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24168EACEB0D814C8CD79C3B /* CommitGraphView.swift */; };
+		43E750B72C3B2A9DDE924022 /* CommitRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AD1F87B2F3BE2B7D84C75A /* CommitRow.swift */; };
+		474C9F2D4C7B4E3C491E00B6 /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96DDCCB14BD695BE5F038C45 /* LoadingView.swift */; };
+		4CECB80116729F92E88E2842 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD39D978726CE88C5545101B /* AppSettings.swift */; };
+		506D2D9E81B3D4F6CEED6846 /* GitDiffParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AE254C01832DA30621F9A0 /* GitDiffParser.swift */; };
+		55216182BD3CCA8D71EE04BB /* BranchListSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FE5EDF81A2C4A47C97AD2FF /* BranchListSection.swift */; };
+		5D34F08C4DE5BEA840276C9C /* DiffHunk.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F1333F408FCAD78E3A518A /* DiffHunk.swift */; };
+		6090D008A3177652D09FC2B8 /* GravatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6465C29B86F9E7116ACB09B6 /* GravatarView.swift */; };
+		6E8C2E3D89FAB26F64F45AD9 /* CommitInfoHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 201D4700A30B97F54CA67D27 /* CommitInfoHeader.swift */; };
+		733FC145A5D9AB7E2C265E4A /* Repository.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF907F87D5C2D4F39890CFCF /* Repository.swift */; };
+		73DF02780740079E66E9AF5C /* BinaryPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8EA69E7DADC71C013C92973 /* BinaryPreviewView.swift */; };
+		79F64164B8B80A9D774280E7 /* AppCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C6F0E2F1F8A2AAADA1C5412 /* AppCommands.swift */; };
+		7B7A0726DB3713A809C182BF /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7AB32FC95D7EA31DAE1110C /* SidebarView.swift */; };
+		7D101ED56FB895F2469751A0 /* RefBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = E41A171FA41A1158B7C9F18C /* RefBadge.swift */; };
+		8818C572227CEEC110BA51ED /* CommitListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6908484833F605F5DC5A237F /* CommitListViewModel.swift */; };
+		89BD43A33AB5E3A805FC4C4F /* ChangedFilesList.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE450171EE5BC945A9B899A8 /* ChangedFilesList.swift */; };
+		931A9599F525B0A275BEBB23 /* String+SHA.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1131A0277A1B70D605DCBB50 /* String+SHA.swift */; };
+		93D2667DA15F0DC03F335A15 /* SidebarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70F61F5DCDC19C4CE409F40B /* SidebarViewModel.swift */; };
+		967EB78EAF0DCC0CC91BD10F /* GitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EFFF5E05A856E32B61F4BF8 /* GitService.swift */; };
+		96DCA2DD9D18E111F54DBE91 /* RepositoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7074ABDB6615178C3A4EEC /* RepositoryStore.swift */; };
+		98DCFE603CFFF7FA1C0BE0C2 /* GraphLayoutEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 671C020DD24BC2B9B782FEC4 /* GraphLayoutEngine.swift */; };
+		9C02951399CFDF00EDD0DA4A /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86DC3ADCDA28E13A0190B1AE /* PreferencesView.swift */; };
+		9C2613391CDE0FD2C84ACA62 /* Color+Arbor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 221DE30B59BD493BEC21234C /* Color+Arbor.swift */; };
+		A8EC7EE0462C5785C36916EC /* GitDiffParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F389EC5146F930F4B3C42A1B /* GitDiffParserTests.swift */; };
+		A919C93E9F5E920DE3B40646 /* DetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C459F008B0E954FE3DFFB1F /* DetailViewModel.swift */; };
+		B092CE870B05833672F62E98 /* AppViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D149DE0F9C58C7383EB0C573 /* AppViewModel.swift */; };
+		B5D52E642D768B82BF212EB2 /* GravatarCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38371621FE274B107D70962E /* GravatarCache.swift */; };
+		B64998BADDFC36F01E9D074F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 822D34B8B41F946206B070C8 /* Assets.xcassets */; };
+		B9595D1434727BF28ECADC13 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C72C3BC9427ED08BBBC316D4 /* RootView.swift */; };
+		C840710A977A0068FF023C3E /* Data+Arbor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74B7EC97BDC14F42CD1163F7 /* Data+Arbor.swift */; };
+		CB345F7DDA9BDCD751CE0DD3 /* RepositoryCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35DD40125D4709E281737DCE /* RepositoryCell.swift */; };
+		CD8A5157D94FC8D7833C4D2A /* BranchCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A9717B8BAFD0862F429ACF8 /* BranchCell.swift */; };
+		CFD741181E98539D962659D2 /* GitLogParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB42B18563C1FCE55D81A5E6 /* GitLogParser.swift */; };
+		D14F94070E4D02A1E6A1773C /* GitLogParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A22AA3DF7C48932F2A3E9183 /* GitLogParserTests.swift */; };
+		D659D9C555AA41F1930552BB /* FileTreeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B133D23E9FF0D17729D065F3 /* FileTreeView.swift */; };
+		DC1F9B61D928E9FE94E38961 /* RepositoryListSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 051E469B27B8D4F724FB43E2 /* RepositoryListSection.swift */; };
+		E10AF116A97C624765BF2FD0 /* GraphLayoutEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E62E716B8EEA5751E5482B22 /* GraphLayoutEngineTests.swift */; };
+		E4284E3C70B00E820B0F2C7F /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B661FB0BE890337EF522F7B /* DetailView.swift */; };
+		F2229FC4CE538AF00C50642A /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BB1F64095E1B242B4659CCF /* WelcomeView.swift */; };
+		F5D73E66408EC58C77E0DCF0 /* SectionToggleHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3063A600B70B1C6D0E632B /* SectionToggleHeader.swift */; };
+		F68D1C4BFC5FA7BB272C35D1 /* DiffFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C3B2337DD0D5B60320AC1 /* DiffFile.swift */; };
+		F8FEFD61DC011A3D8386E3E7 /* CommitListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D99D9BD3D8279517DEC95D17 /* CommitListView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		CB9B0A3C1646D9AFF550682A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B419F7CE55E998980797F5AE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BB73B999AA50A2375EEB9171;
+			remoteInfo = Arbor;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		051E469B27B8D4F724FB43E2 /* RepositoryListSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryListSection.swift; sourceTree = "<group>"; };
+		1131A0277A1B70D605DCBB50 /* String+SHA.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+SHA.swift"; sourceTree = "<group>"; };
+		1FE5EDF81A2C4A47C97AD2FF /* BranchListSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BranchListSection.swift; sourceTree = "<group>"; };
+		201D4700A30B97F54CA67D27 /* CommitInfoHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommitInfoHeader.swift; sourceTree = "<group>"; };
+		221DE30B59BD493BEC21234C /* Color+Arbor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Arbor.swift"; sourceTree = "<group>"; };
+		23AE254C01832DA30621F9A0 /* GitDiffParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitDiffParser.swift; sourceTree = "<group>"; };
+		24168EACEB0D814C8CD79C3B /* CommitGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommitGraphView.swift; sourceTree = "<group>"; };
+		2786C49D88760974A79A80DD /* FileStatusBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileStatusBadge.swift; sourceTree = "<group>"; };
+		2A9717B8BAFD0862F429ACF8 /* BranchCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BranchCell.swift; sourceTree = "<group>"; };
+		35DD40125D4709E281737DCE /* RepositoryCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryCell.swift; sourceTree = "<group>"; };
+		38371621FE274B107D70962E /* GravatarCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GravatarCache.swift; sourceTree = "<group>"; };
+		3C2C562C373737670CBFBE5E /* UnifiedDiffView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnifiedDiffView.swift; sourceTree = "<group>"; };
+		3E21E7884FA34E8DD0070C62 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
+		4D5C2D60B51A42DBDB08819D /* ExtensionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionTests.swift; sourceTree = "<group>"; };
+		5EFFF5E05A856E32B61F4BF8 /* GitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitService.swift; sourceTree = "<group>"; };
+		61AD1F87B2F3BE2B7D84C75A /* CommitRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommitRow.swift; sourceTree = "<group>"; };
+		6465C29B86F9E7116ACB09B6 /* GravatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GravatarView.swift; sourceTree = "<group>"; };
+		671C020DD24BC2B9B782FEC4 /* GraphLayoutEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphLayoutEngine.swift; sourceTree = "<group>"; };
+		6908484833F605F5DC5A237F /* CommitListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommitListViewModel.swift; sourceTree = "<group>"; };
+		6B60185DA8DE888BF9FAAAC3 /* CommitGraph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommitGraph.swift; sourceTree = "<group>"; };
+		6B661FB0BE890337EF522F7B /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
+		6C459F008B0E954FE3DFFB1F /* DetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewModel.swift; sourceTree = "<group>"; };
+		6C6F0E2F1F8A2AAADA1C5412 /* AppCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCommands.swift; sourceTree = "<group>"; };
+		70F61F5DCDC19C4CE409F40B /* SidebarViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarViewModel.swift; sourceTree = "<group>"; };
+		730D8E7FFE1E1C5B70A3DDCD /* Commit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Commit.swift; sourceTree = "<group>"; };
+		74B7EC97BDC14F42CD1163F7 /* Data+Arbor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Arbor.swift"; sourceTree = "<group>"; };
+		7828BA297F44C74BE0003EE4 /* Date+RelativeFormat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+RelativeFormat.swift"; sourceTree = "<group>"; };
+		7BB1F64095E1B242B4659CCF /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
+		822D34B8B41F946206B070C8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		86DC3ADCDA28E13A0190B1AE /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
+		8AD7AB6F02EB2F451ED5586D /* ArborTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ArborTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		8C3063A600B70B1C6D0E632B /* SectionToggleHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionToggleHeader.swift; sourceTree = "<group>"; };
+		96DDCCB14BD695BE5F038C45 /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
+		A1FB379F3B7D6E859A6BAF5B /* SplitDiffView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitDiffView.swift; sourceTree = "<group>"; };
+		A22AA3DF7C48932F2A3E9183 /* GitLogParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitLogParserTests.swift; sourceTree = "<group>"; };
+		AB42B18563C1FCE55D81A5E6 /* GitLogParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitLogParser.swift; sourceTree = "<group>"; };
+		AD39D978726CE88C5545101B /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		AF7074ABDB6615178C3A4EEC /* RepositoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryStore.swift; sourceTree = "<group>"; };
+		B133D23E9FF0D17729D065F3 /* FileTreeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileTreeView.swift; sourceTree = "<group>"; };
+		B8EA69E7DADC71C013C92973 /* BinaryPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BinaryPreviewView.swift; sourceTree = "<group>"; };
+		C72C3BC9427ED08BBBC316D4 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		C8CC8E640CF8172488322AB3 /* Arbor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Arbor.entitlements; sourceTree = "<group>"; };
+		CBAC62CC4DC9451138C0087B /* Arbor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Arbor.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D0F1333F408FCAD78E3A518A /* DiffHunk.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiffHunk.swift; sourceTree = "<group>"; };
+		D149DE0F9C58C7383EB0C573 /* AppViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppViewModel.swift; sourceTree = "<group>"; };
+		D7AB32FC95D7EA31DAE1110C /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
+		D7F8C44978F0FAC7B836F8BC /* ArborApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArborApp.swift; sourceTree = "<group>"; };
+		D99D9BD3D8279517DEC95D17 /* CommitListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommitListView.swift; sourceTree = "<group>"; };
+		DF907F87D5C2D4F39890CFCF /* Repository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Repository.swift; sourceTree = "<group>"; };
+		E41A171FA41A1158B7C9F18C /* RefBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefBadge.swift; sourceTree = "<group>"; };
+		E44CBC849A1DCE165BC292FC /* Branch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Branch.swift; sourceTree = "<group>"; };
+		E62E716B8EEA5751E5482B22 /* GraphLayoutEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphLayoutEngineTests.swift; sourceTree = "<group>"; };
+		EE450171EE5BC945A9B899A8 /* ChangedFilesList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangedFilesList.swift; sourceTree = "<group>"; };
+		F389EC5146F930F4B3C42A1B /* GitDiffParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitDiffParserTests.swift; sourceTree = "<group>"; };
+		FD0C3B2337DD0D5B60320AC1 /* DiffFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiffFile.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		0F98DCCE9B059B27AD643DB3 /* ArborTests */ = {
+			isa = PBXGroup;
+			children = (
+				4D5C2D60B51A42DBDB08819D /* ExtensionTests.swift */,
+				F389EC5146F930F4B3C42A1B /* GitDiffParserTests.swift */,
+				A22AA3DF7C48932F2A3E9183 /* GitLogParserTests.swift */,
+				E62E716B8EEA5751E5482B22 /* GraphLayoutEngineTests.swift */,
+			);
+			path = ArborTests;
+			sourceTree = "<group>";
+		};
+		1B2CBB19D8906997CD01BA90 /* Sidebar */ = {
+			isa = PBXGroup;
+			children = (
+				2A9717B8BAFD0862F429ACF8 /* BranchCell.swift */,
+				1FE5EDF81A2C4A47C97AD2FF /* BranchListSection.swift */,
+				35DD40125D4709E281737DCE /* RepositoryCell.swift */,
+				051E469B27B8D4F724FB43E2 /* RepositoryListSection.swift */,
+				8C3063A600B70B1C6D0E632B /* SectionToggleHeader.swift */,
+				D7AB32FC95D7EA31DAE1110C /* SidebarView.swift */,
+			);
+			path = Sidebar;
+			sourceTree = "<group>";
+		};
+		414AA6E27524D35E5647C1B5 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				D149DE0F9C58C7383EB0C573 /* AppViewModel.swift */,
+				6908484833F605F5DC5A237F /* CommitListViewModel.swift */,
+				6C459F008B0E954FE3DFFB1F /* DetailViewModel.swift */,
+				70F61F5DCDC19C4CE409F40B /* SidebarViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		5A0671AC74E68336F6CF9A32 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				221DE30B59BD493BEC21234C /* Color+Arbor.swift */,
+				74B7EC97BDC14F42CD1163F7 /* Data+Arbor.swift */,
+				7828BA297F44C74BE0003EE4 /* Date+RelativeFormat.swift */,
+				1131A0277A1B70D605DCBB50 /* String+SHA.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		6075FFDD9E42983BB4A79C32 /* Root */ = {
+			isa = PBXGroup;
+			children = (
+				86DC3ADCDA28E13A0190B1AE /* PreferencesView.swift */,
+				C72C3BC9427ED08BBBC316D4 /* RootView.swift */,
+				7BB1F64095E1B242B4659CCF /* WelcomeView.swift */,
+			);
+			path = Root;
+			sourceTree = "<group>";
+		};
+		95251D0079BD31E530A013C7 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				3E21E7884FA34E8DD0070C62 /* EmptyStateView.swift */,
+				6465C29B86F9E7116ACB09B6 /* GravatarView.swift */,
+				96DDCCB14BD695BE5F038C45 /* LoadingView.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		AECDDB09DA6EE5C50A3054E4 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				ECFF0A3E48D57FF926C2273C /* CommitList */,
+				D462554FDD0DFCF373A4081F /* Detail */,
+				6075FFDD9E42983BB4A79C32 /* Root */,
+				95251D0079BD31E530A013C7 /* Shared */,
+				1B2CBB19D8906997CD01BA90 /* Sidebar */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B55D37DD6934D75B2BF2B0E2 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				E44CBC849A1DCE165BC292FC /* Branch.swift */,
+				730D8E7FFE1E1C5B70A3DDCD /* Commit.swift */,
+				6B60185DA8DE888BF9FAAAC3 /* CommitGraph.swift */,
+				FD0C3B2337DD0D5B60320AC1 /* DiffFile.swift */,
+				D0F1333F408FCAD78E3A518A /* DiffHunk.swift */,
+				DF907F87D5C2D4F39890CFCF /* Repository.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		BAB0656FBEA94E2DCD82F685 /* Arbor */ = {
+			isa = PBXGroup;
+			children = (
+				D6FD980A8065DF43F9B40C10 /* App */,
+				5A0671AC74E68336F6CF9A32 /* Extensions */,
+				B55D37DD6934D75B2BF2B0E2 /* Models */,
+				D39A748F48C5162A07DE296D /* Resources */,
+				C574F1E34CE710E1ED63E9CA /* Services */,
+				414AA6E27524D35E5647C1B5 /* ViewModels */,
+				AECDDB09DA6EE5C50A3054E4 /* Views */,
+			);
+			path = Arbor;
+			sourceTree = "<group>";
+		};
+		C574F1E34CE710E1ED63E9CA /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				AD39D978726CE88C5545101B /* AppSettings.swift */,
+				23AE254C01832DA30621F9A0 /* GitDiffParser.swift */,
+				AB42B18563C1FCE55D81A5E6 /* GitLogParser.swift */,
+				5EFFF5E05A856E32B61F4BF8 /* GitService.swift */,
+				671C020DD24BC2B9B782FEC4 /* GraphLayoutEngine.swift */,
+				38371621FE274B107D70962E /* GravatarCache.swift */,
+				AF7074ABDB6615178C3A4EEC /* RepositoryStore.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		D39A748F48C5162A07DE296D /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				C8CC8E640CF8172488322AB3 /* Arbor.entitlements */,
+				822D34B8B41F946206B070C8 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		D456DBA015945693DC8C5A27 = {
+			isa = PBXGroup;
+			children = (
+				BAB0656FBEA94E2DCD82F685 /* Arbor */,
+				0F98DCCE9B059B27AD643DB3 /* ArborTests */,
+				E229EC80D1677D4209FC0651 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D462554FDD0DFCF373A4081F /* Detail */ = {
+			isa = PBXGroup;
+			children = (
+				B8EA69E7DADC71C013C92973 /* BinaryPreviewView.swift */,
+				EE450171EE5BC945A9B899A8 /* ChangedFilesList.swift */,
+				201D4700A30B97F54CA67D27 /* CommitInfoHeader.swift */,
+				6B661FB0BE890337EF522F7B /* DetailView.swift */,
+				2786C49D88760974A79A80DD /* FileStatusBadge.swift */,
+				B133D23E9FF0D17729D065F3 /* FileTreeView.swift */,
+				A1FB379F3B7D6E859A6BAF5B /* SplitDiffView.swift */,
+				3C2C562C373737670CBFBE5E /* UnifiedDiffView.swift */,
+			);
+			path = Detail;
+			sourceTree = "<group>";
+		};
+		D6FD980A8065DF43F9B40C10 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				6C6F0E2F1F8A2AAADA1C5412 /* AppCommands.swift */,
+				D7F8C44978F0FAC7B836F8BC /* ArborApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		E229EC80D1677D4209FC0651 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				CBAC62CC4DC9451138C0087B /* Arbor.app */,
+				8AD7AB6F02EB2F451ED5586D /* ArborTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		ECFF0A3E48D57FF926C2273C /* CommitList */ = {
+			isa = PBXGroup;
+			children = (
+				24168EACEB0D814C8CD79C3B /* CommitGraphView.swift */,
+				D99D9BD3D8279517DEC95D17 /* CommitListView.swift */,
+				61AD1F87B2F3BE2B7D84C75A /* CommitRow.swift */,
+				E41A171FA41A1158B7C9F18C /* RefBadge.swift */,
+			);
+			path = CommitList;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2922186A25D5210F67F7E079 /* ArborTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 563D570F9D1E1BA38080854D /* Build configuration list for PBXNativeTarget "ArborTests" */;
+			buildPhases = (
+				62F360C9EB5A27A47FDD3DAD /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				198AA320499E87D11D783D99 /* PBXTargetDependency */,
+			);
+			name = ArborTests;
+			packageProductDependencies = (
+			);
+			productName = ArborTests;
+			productReference = 8AD7AB6F02EB2F451ED5586D /* ArborTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		BB73B999AA50A2375EEB9171 /* Arbor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 60E017BFD2410CAAABF338E8 /* Build configuration list for PBXNativeTarget "Arbor" */;
+			buildPhases = (
+				C4195B3B1D0B70661C221418 /* Sources */,
+				FB702F201BCF85D4335215ED /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Arbor;
+			packageProductDependencies = (
+			);
+			productName = Arbor;
+			productReference = CBAC62CC4DC9451138C0087B /* Arbor.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B419F7CE55E998980797F5AE /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 7BDBA5033B34FD8F92D41857 /* Build configuration list for PBXProject "Arbor" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = D456DBA015945693DC8C5A27;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = E229EC80D1677D4209FC0651 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BB73B999AA50A2375EEB9171 /* Arbor */,
+				2922186A25D5210F67F7E079 /* ArborTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		FB702F201BCF85D4335215ED /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B64998BADDFC36F01E9D074F /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		62F360C9EB5A27A47FDD3DAD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				137351C3B6F977C0393487F8 /* ExtensionTests.swift in Sources */,
+				A8EC7EE0462C5785C36916EC /* GitDiffParserTests.swift in Sources */,
+				D14F94070E4D02A1E6A1773C /* GitLogParserTests.swift in Sources */,
+				E10AF116A97C624765BF2FD0 /* GraphLayoutEngineTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C4195B3B1D0B70661C221418 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				79F64164B8B80A9D774280E7 /* AppCommands.swift in Sources */,
+				4CECB80116729F92E88E2842 /* AppSettings.swift in Sources */,
+				B092CE870B05833672F62E98 /* AppViewModel.swift in Sources */,
+				08201A804DF1ABB3F0DF328F /* ArborApp.swift in Sources */,
+				73DF02780740079E66E9AF5C /* BinaryPreviewView.swift in Sources */,
+				151B505C5301C3138382CF86 /* Branch.swift in Sources */,
+				CD8A5157D94FC8D7833C4D2A /* BranchCell.swift in Sources */,
+				55216182BD3CCA8D71EE04BB /* BranchListSection.swift in Sources */,
+				89BD43A33AB5E3A805FC4C4F /* ChangedFilesList.swift in Sources */,
+				9C2613391CDE0FD2C84ACA62 /* Color+Arbor.swift in Sources */,
+				3524CD668A4395D43BA3F88D /* Commit.swift in Sources */,
+				090978AA7FB0E959756E2517 /* CommitGraph.swift in Sources */,
+				3A52884A0B1B9D5771785B32 /* CommitGraphView.swift in Sources */,
+				6E8C2E3D89FAB26F64F45AD9 /* CommitInfoHeader.swift in Sources */,
+				F8FEFD61DC011A3D8386E3E7 /* CommitListView.swift in Sources */,
+				8818C572227CEEC110BA51ED /* CommitListViewModel.swift in Sources */,
+				43E750B72C3B2A9DDE924022 /* CommitRow.swift in Sources */,
+				C840710A977A0068FF023C3E /* Data+Arbor.swift in Sources */,
+				29CA3EAD2F0E60CC74A2191A /* Date+RelativeFormat.swift in Sources */,
+				E4284E3C70B00E820B0F2C7F /* DetailView.swift in Sources */,
+				A919C93E9F5E920DE3B40646 /* DetailViewModel.swift in Sources */,
+				F68D1C4BFC5FA7BB272C35D1 /* DiffFile.swift in Sources */,
+				5D34F08C4DE5BEA840276C9C /* DiffHunk.swift in Sources */,
+				2660971C11BFEFCCEFB60A86 /* EmptyStateView.swift in Sources */,
+				1D729C190F180BAD08AB0354 /* FileStatusBadge.swift in Sources */,
+				D659D9C555AA41F1930552BB /* FileTreeView.swift in Sources */,
+				506D2D9E81B3D4F6CEED6846 /* GitDiffParser.swift in Sources */,
+				CFD741181E98539D962659D2 /* GitLogParser.swift in Sources */,
+				967EB78EAF0DCC0CC91BD10F /* GitService.swift in Sources */,
+				98DCFE603CFFF7FA1C0BE0C2 /* GraphLayoutEngine.swift in Sources */,
+				B5D52E642D768B82BF212EB2 /* GravatarCache.swift in Sources */,
+				6090D008A3177652D09FC2B8 /* GravatarView.swift in Sources */,
+				474C9F2D4C7B4E3C491E00B6 /* LoadingView.swift in Sources */,
+				9C02951399CFDF00EDD0DA4A /* PreferencesView.swift in Sources */,
+				7D101ED56FB895F2469751A0 /* RefBadge.swift in Sources */,
+				733FC145A5D9AB7E2C265E4A /* Repository.swift in Sources */,
+				CB345F7DDA9BDCD751CE0DD3 /* RepositoryCell.swift in Sources */,
+				DC1F9B61D928E9FE94E38961 /* RepositoryListSection.swift in Sources */,
+				96DCA2DD9D18E111F54DBE91 /* RepositoryStore.swift in Sources */,
+				B9595D1434727BF28ECADC13 /* RootView.swift in Sources */,
+				F5D73E66408EC58C77E0DCF0 /* SectionToggleHeader.swift in Sources */,
+				7B7A0726DB3713A809C182BF /* SidebarView.swift in Sources */,
+				93D2667DA15F0DC03F335A15 /* SidebarViewModel.swift in Sources */,
+				0241A2F0A2E3C9E43CDC1354 /* SplitDiffView.swift in Sources */,
+				931A9599F525B0A275BEBB23 /* String+SHA.swift in Sources */,
+				18B97F1FA577EAC92EE7B703 /* UnifiedDiffView.swift in Sources */,
+				F2229FC4CE538AF00C50642A /* WelcomeView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		198AA320499E87D11D783D99 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BB73B999AA50A2375EEB9171 /* Arbor */;
+			targetProxy = CB9B0A3C1646D9AFF550682A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1193D7038A6603B0B72EA3F7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kkawahara.ArborTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.9;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Arbor.app/Contents/MacOS/Arbor";
+			};
+			name = Release;
+		};
+		2BF549AD6D9B45EB012F338B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Arbor/Resources/Arbor.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kkawahara.Arbor;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		A04EEB7EFBB4826F1A019997 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Arbor/Resources/Arbor.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kkawahara.Arbor;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		A2396F600F9938514A49C23D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		E8DBB1A061E209DDA5F5DF75 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kkawahara.ArborTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.9;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Arbor.app/Contents/MacOS/Arbor";
+			};
+			name = Debug;
+		};
+		F3B5660B858E3E1D07FBBD89 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		563D570F9D1E1BA38080854D /* Build configuration list for PBXNativeTarget "ArborTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E8DBB1A061E209DDA5F5DF75 /* Debug */,
+				1193D7038A6603B0B72EA3F7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		60E017BFD2410CAAABF338E8 /* Build configuration list for PBXNativeTarget "Arbor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2BF549AD6D9B45EB012F338B /* Debug */,
+				A04EEB7EFBB4826F1A019997 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		7BDBA5033B34FD8F92D41857 /* Build configuration list for PBXProject "Arbor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A2396F600F9938514A49C23D /* Debug */,
+				F3B5660B858E3E1D07FBBD89 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B419F7CE55E998980797F5AE /* Project object */;
+}
