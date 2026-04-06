@@ -5,6 +5,7 @@ enum GitError: Error, LocalizedError {
     case commandFailed(String)
     case parseError(String)
     case outputTooLarge
+    case timedOut
 
     var errorDescription: String? {
         switch self {
@@ -12,6 +13,7 @@ enum GitError: Error, LocalizedError {
         case .commandFailed(let msg): return "Git command failed: \(msg)"
         case .parseError(let msg): return "Parse error: \(msg)"
         case .outputTooLarge: return "Command output too large"
+        case .timedOut: return "Git command timed out"
         }
     }
 }
@@ -26,7 +28,10 @@ actor GitService {
     private final class ProcessState {
         var cancelledByTask = false
         var processLaunched = false
+        var timedOut = false
     }
+
+    private let defaultCommandTimeout: TimeInterval = 30
 
     // Thread-safe lazy resolution via static let (Swift guarantees once-only initialization).
     // Stores Result so a lookup failure is also cached and not retried on every init.
@@ -58,7 +63,12 @@ actor GitService {
     // Core implementation: launches git, writes optional stdinData, returns raw stdout Data.
     // Throws CancellationError on task cancellation, GitError.commandFailed on non-zero exit.
     // Throws GitError.outputTooLarge if stdout exceeds maxOutputBytes (avoids String conversion).
-    private func runCore(_ arguments: [String], stdinData: Data? = nil, maxOutputBytes: Int? = nil) async throws -> Data {
+    private func runCore(
+        _ arguments: [String],
+        stdinData: Data? = nil,
+        maxOutputBytes: Int? = nil,
+        timeout: TimeInterval? = nil
+    ) async throws -> Data {
         // Avoid spawning a subprocess when the calling task is already cancelled.
         try Task.checkCancellation()
         let process = Process()
@@ -113,6 +123,23 @@ actor GitService {
                 lock.unlock()
                 if alreadyCancelled { process.terminate() }
 
+                let queue = DispatchQueue.global(qos: .userInitiated)
+
+                let timeoutSeconds = timeout ?? defaultCommandTimeout
+                if timeoutSeconds > 0 {
+                    queue.asyncAfter(deadline: .now() + timeoutSeconds) {
+                        lock.lock()
+                        guard !state.cancelledByTask, !state.timedOut else {
+                            lock.unlock()
+                            return
+                        }
+                        state.timedOut = true
+                        let launched = state.processLaunched
+                        lock.unlock()
+                        if launched { process.terminate() }
+                    }
+                }
+
                 // Write stdin before reading stdout/stderr so the process can proceed.
                 // Path data is small (<4KB), well within the 64KB pipe buffer, so
                 // synchronous write will not block.
@@ -125,7 +152,6 @@ actor GitService {
                 // readDataToEndOfFile() blocks until the write end closes (process exit), so both
                 // reads must run in parallel; otherwise the process blocks on a full pipe.
                 let group = DispatchGroup()
-                let queue = DispatchQueue.global(qos: .userInitiated)
                 var stdoutData = Data()
                 var stderrData = Data()
                 // Set by the stdout reader when maxOutputBytes is exceeded; read in group.notify.
@@ -193,12 +219,15 @@ actor GitService {
 
                     lock.lock()
                     let wasCancelled = state.cancelledByTask
+                    let didTimeout = state.timedOut
                     lock.unlock()
 
                     if wasCancelled {
                         continuation.resume(throwing: CancellationError())
                     } else if outputLimitExceeded {
                         continuation.resume(throwing: GitError.outputTooLarge)
+                    } else if didTimeout {
+                        continuation.resume(throwing: GitError.timedOut)
                     } else if process.terminationStatus == 0 {
                         continuation.resume(returning: stdoutData)
                     } else {

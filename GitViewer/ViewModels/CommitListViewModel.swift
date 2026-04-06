@@ -23,6 +23,7 @@ final class CommitListViewModel {
     private var searchTask: Task<Void, Never>?
     private var workingTreeTask: Task<Void, Never>?
     private var workingTreeGeneration = 0
+    private var loadingGeneration = 0
     private var gitService: GitService?
     private var graphActiveLanes: [String?] = []  // incremental graph state across pages
 
@@ -36,6 +37,8 @@ final class CommitListViewModel {
         loadTask?.cancel()
         searchTask?.cancel()
         workingTreeTask?.cancel()
+        loadingGeneration += 1
+        let loadingGen = loadingGeneration
         commits = []
         filteredCommits = []
         fetchOffset = 0
@@ -49,16 +52,18 @@ final class CommitListViewModel {
         searchQuery = ""
         workingTreeGeneration += 1
         let wtGen = workingTreeGeneration
-        loadTask = Task { [weak self] in await self?.fetchPage() }
+        loadTask = Task { [weak self] in await self?.fetchPage(generation: loadingGen) }
         workingTreeTask = Task { [weak self] in await self?.fetchWorkingTree(service: service, generation: wtGen) }
     }
 
     func loadMore() {
         guard !isLoading, hasMore, gitService != nil, searchQuery.isEmpty else { return }
         loadTask?.cancel()
+        loadingGeneration += 1
+        let loadingGen = loadingGeneration
         errorMessage = nil
         isLoading = true
-        loadTask = Task { [weak self] in await self?.fetchPage() }
+        loadTask = Task { [weak self] in await self?.fetchPage(generation: loadingGen) }
     }
 
     // Called from view's onChange(of: searchQuery) — fires only on actual value changes,
@@ -77,8 +82,10 @@ final class CommitListViewModel {
                 // loadTask was cancelled while typing a query before the first page loaded.
                 // Restart the fetch so the list doesn't stay empty with isLoading=true.
                 loadTask?.cancel()
+                loadingGeneration += 1
+                let loadingGen = loadingGeneration
                 isLoading = true
-                loadTask = Task { [weak self] in await self?.fetchPage() }
+                loadTask = Task { [weak self] in await self?.fetchPage(generation: loadingGen) }
             }
         } else if looksLikeSHA(query) {
             jumpToSHA(query)
@@ -89,11 +96,13 @@ final class CommitListViewModel {
             selectedCommit = nil
             errorMessage = nil
             isLoading = true
+            loadingGeneration += 1
+            let loadingGen = loadingGeneration
             searchTask = Task { [weak self] in
                 do { try await Task.sleep(nanoseconds: 300_000_000) } catch {
                     return  // Cancelled; caller already manages isLoading
                 }
-                await self?.performGlobalSearch(query: query)
+                await self?.performGlobalSearch(query: query, generation: loadingGen)
             }
         }
     }
@@ -111,11 +120,18 @@ final class CommitListViewModel {
         selectedCommit = nil
         errorMessage = nil
         isLoading = true
-        searchTask = Task { [weak self] in await self?.fetchAndSelectCommit(sha: sha) }
+        loadingGeneration += 1
+        let loadingGen = loadingGeneration
+        searchTask = Task { [weak self] in await self?.fetchAndSelectCommit(sha: sha, generation: loadingGen) }
     }
 
-    private func fetchAndSelectCommit(sha: String) async {
+    private func fetchAndSelectCommit(sha: String, generation: Int) async {
         guard let service = gitService else { return }
+        defer {
+            if loadingGeneration == generation, isLoading {
+                isLoading = false
+            }
+        }
         do {
             let output = try await service.fetchCommitBySHA(sha)
             guard !Task.isCancelled else { return }
@@ -123,11 +139,9 @@ final class CommitListViewModel {
             guard !Task.isCancelled else { return }
             filteredCommits = found
             selectedCommit = found.first
-            isLoading = false
         } catch is CancellationError {
         } catch {
             filteredCommits = []
-            isLoading = false
         }
     }
 
@@ -137,14 +151,21 @@ final class CommitListViewModel {
         selectedCommit = nil
         errorMessage = nil
         isLoading = true
+        loadingGeneration += 1
+        let loadingGen = loadingGeneration
         searchTask = Task { [weak self] in
             do { try await Task.sleep(nanoseconds: 300_000_000) } catch { return }
-            await self?.performSHALookup(sha: sha)
+            await self?.performSHALookup(sha: sha, generation: loadingGen)
         }
     }
 
-    private func performSHALookup(sha: String) async {
+    private func performSHALookup(sha: String, generation: Int) async {
         guard let service = gitService else { return }
+        defer {
+            if loadingGeneration == generation, isLoading {
+                isLoading = false
+            }
+        }
         do {
             let output = try await service.fetchCommitBySHA(sha)
             guard searchQuery == sha else { return }
@@ -152,13 +173,11 @@ final class CommitListViewModel {
             guard searchQuery == sha else { return }
             filteredCommits = found
             selectedCommit = found.first
-            isLoading = false
         } catch is CancellationError {
         } catch {
             guard searchQuery == sha else { return }
             // Don't show git error text; let the empty-state view handle "no results".
             filteredCommits = []
-            isLoading = false
         }
     }
 
@@ -199,8 +218,13 @@ final class CommitListViewModel {
         }
     }
 
-    private func fetchPage() async {
+    private func fetchPage(generation: Int) async {
         guard let service = gitService else { return }
+        defer {
+            if loadingGeneration == generation, isLoading {
+                isLoading = false
+            }
+        }
         // Capture ref, offset, and query so we can verify they haven't changed after the await.
         let ref = currentRef
         let offset = fetchOffset
@@ -230,18 +254,21 @@ final class CommitListViewModel {
             if selectedCommit == nil, !filteredCommits.isEmpty {
                 selectedCommit = filteredCommits.first
             }
-            isLoading = false
         } catch is CancellationError {
-            // Newer loadInitial is managing isLoading; don't touch it
+            // Generation check in defer ensures isLoading is only cleared for the current load
         } catch {
             guard currentRef == ref, fetchOffset == offset, searchQuery == query else { return }
             errorMessage = error.localizedDescription
-            isLoading = false
         }
     }
 
-    private func performGlobalSearch(query: String) async {
+    private func performGlobalSearch(query: String, generation: Int) async {
         guard let service = gitService, !query.isEmpty else { return }
+        defer {
+            if loadingGeneration == generation, isLoading {
+                isLoading = false
+            }
+        }
         // Capture ref so a branch switch after the await doesn't mix results.
         let ref = currentRef
         do {
@@ -279,12 +306,10 @@ final class CommitListViewModel {
             if !stillPresent {
                 selectedCommit = filteredCommits.first
             }
-            isLoading = false
         } catch is CancellationError {
         } catch {
             guard searchQuery == query, currentRef == ref else { return }
             errorMessage = error.localizedDescription
-            isLoading = false
         }
     }
 
