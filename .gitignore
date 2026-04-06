@@ -22,6 +22,9 @@ DerivedData/
 .build/
 .swiftpm/
 
+# Build output
+build/
+
 # CocoaPods (not used, but just in case)
 Pods/
 
