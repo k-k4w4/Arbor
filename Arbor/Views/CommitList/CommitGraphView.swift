@@ -3,9 +3,10 @@ import SwiftUI
 // Canvas-based commit graph lane renderer.
 // Height is determined by the parent (no fixed height constraint).
 struct CommitGraphView: View {
+    @Environment(AppSettings.self) private var settings
     let node: GraphNode
 
-    private let laneWidth: CGFloat = 14
+    private var laneWidth: CGFloat { CGFloat(settings.graphLaneWidth) }
     private let nodeRadius: CGFloat = 4
 
     var body: some View {

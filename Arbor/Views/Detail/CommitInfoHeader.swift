@@ -17,6 +17,7 @@ private struct ParentSHALink: View {
 }
 
 struct CommitInfoHeader: View {
+    @Environment(AppSettings.self) private var settings
     let commit: Commit
     let commitBody: String
     let showAbsoluteDates: Bool
@@ -32,7 +33,9 @@ struct CommitInfoHeader: View {
                     .foregroundStyle(.orange)
             } else {
                 HStack(alignment: .top, spacing: 10) {
-                    GravatarView(email: commit.authorEmail, name: commit.authorName, size: 36)
+                    if settings.showGravatar {
+                        GravatarView(email: commit.authorEmail, name: commit.authorName, size: 36)
+                    }
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(commit.subject)

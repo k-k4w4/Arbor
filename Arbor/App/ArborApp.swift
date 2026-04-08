@@ -14,8 +14,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 @main
 struct ArborApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    @State private var appViewModel = AppViewModel()
-    @State private var settings = AppSettings()
+    @State private var settings: AppSettings
+    @State private var appViewModel: AppViewModel
+
+    init() {
+        let s = AppSettings()
+        _settings = State(initialValue: s)
+        _appViewModel = State(initialValue: AppViewModel(settings: s))
+    }
 
     var body: some Scene {
         WindowGroup {

@@ -10,6 +10,7 @@ struct PreferencesView: View {
                 Toggle("日時を絶対表示する", isOn: $settings.showAbsoluteDates)
                 Toggle("変更ファイルをツリー表示する", isOn: $settings.showFileTree)
                 Toggle("Split diff 表示する", isOn: $settings.showSplitDiff)
+                Toggle("Gravatar アバターを表示する", isOn: $settings.showGravatar)
             }
             Section("外観") {
                 Picker("テーマ", selection: $settings.appearanceMode) {
@@ -19,6 +20,36 @@ struct PreferencesView: View {
                 }
                 .pickerStyle(.inline)
                 .labelsHidden()
+            }
+            Section("高度な設定") {
+                HStack {
+                    Text("グラフのレーン幅")
+                    Spacer()
+                    TextField("", value: $settings.graphLaneWidth, format: .number)
+                        .frame(width: 60)
+                        .multilineTextAlignment(.trailing)
+                    Text("pt")
+                        .foregroundStyle(.secondary)
+                }
+                HStack {
+                    Text("Git バイナリパス")
+                    Spacer()
+                    Picker("", selection: $settings.useCustomGitPath) {
+                        Text("自動検出").tag(false)
+                        Text("カスタム").tag(true)
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .fixedSize()
+                }
+                if settings.useCustomGitPath {
+                    TextField(text: $settings.customGitPath, prompt: Text("/usr/bin/git")) {
+                        EmptyView()
+                    }
+                    Text("変更はリポジトリ再選択時に反映されます。")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
         .formStyle(.grouped)

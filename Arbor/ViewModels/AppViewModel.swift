@@ -10,6 +10,7 @@ final class AppViewModel {
     var commitListVM: CommitListViewModel?
     var detailVM: DetailViewModel?
     var errorMessage: String?
+    let settings: AppSettings
 
     var windowTitle: String {
         guard let repo = selectedRepository else { return "Arbor" }
@@ -19,7 +20,8 @@ final class AppViewModel {
         return "\(repoName) — \(ref.shortName)"
     }
     private(set) var gitService: GitService?
-    init() {
+    init(settings: AppSettings) {
+        self.settings = settings
         let result = RepositoryStore.shared.load()
         repositories = result.repos
         if let msg = result.error {
@@ -37,7 +39,7 @@ final class AppViewModel {
         // different path representations is detected as a duplicate.
         let normalized = url.standardizedFileURL.resolvingSymlinksInPath()
         guard !repositories.contains(where: { $0.path.standardizedFileURL.resolvingSymlinksInPath() == normalized }) else { return }
-        let service = try GitService(repositoryURL: normalized)
+        let service = try GitService(repositoryURL: normalized, gitPath: settings.effectiveGitPath)
         try await service.validateRepository()
         let headBranch = try await service.fetchHeadBranch()
         // Re-check after awaits: another concurrent call may have added the same URL.
@@ -92,7 +94,7 @@ final class AppViewModel {
         // remains consistent with the active git service.
         let service: GitService
         do {
-            service = try GitService(repositoryURL: repo.path)
+            service = try GitService(repositoryURL: repo.path, gitPath: settings.effectiveGitPath)
         } catch {
             errorMessage = error.localizedDescription
             return

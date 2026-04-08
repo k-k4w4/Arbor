@@ -137,10 +137,20 @@ Arbor/
   - バイナリ/大容量ファイルのフォールバック表示
   - `LC_ALL=C` で git 出力のローカライズ問題を防止
 - **サイドバークリック判定修正**: `listRowInsets(EdgeInsets())` + 内側パディング方式で全幅タップ対応
+- **Phase 35 完了**: ファイルパスをコピー
+  - ChangedFilesList / FileTreeView のコンテキストメニューに「パスをコピー」追加
+- **Phase 36 完了**: Gravatar ON/OFF
+  - `AppSettings.showGravatar` トグル（Preferences「一般」セクション）
+  - OFF時は CommitInfoHeader でアバター非表示
+- **Phase 38 完了**: グラフ幅・Git パス指定
+  - `AppSettings.graphLaneWidth`（6〜40pt、デフォルト14）→ CommitGraphView に反映
+  - `AppSettings.customGitPath`（空=自動検出）→ GitService 生成時に使用
+  - Preferences「高度な設定」セクション新設
+  - `AppViewModel` が `init(settings:)` で AppSettings を受け取る設計に変更
 
 ## テスト
 
-`ArborTests/` に 81 件のユニットテスト（2026-04-02 時点）。
+`ArborTests/` に 99 件のユニットテスト（2026-04-09 時点）。
 対象: `GitLogParser`, `GitDiffParser`, `GraphLayoutEngine`, `Date+RelativeFormat`, `String+SHA`
 
 実行: `xcodebuild -scheme Arbor -destination 'platform=macOS' test`
@@ -148,9 +158,8 @@ Arbor/
 ## 将来拡張（ロードマップ）
 
 詳細は memory の `project_roadmap.md` を参照。概要：
-- Phase 11: Preferences 画面【Medium】
 - Phase 12: サイドバーブランチ/タグページング【Medium】
-- Phase 13: ローカル差分（未コミット変更）表示【Medium】
-- Phase 14: 構文ハイライト・Gravatar・Split diff・ファイルツリー・Quick Look【Low】
-- Phase 15: ブランチ間比較・マルチウィンドウ【Low】
-- Phase 16: セクション省略/全表示トグル【Low】
+- Phase 37: diff 表示設定（タブ幅・フォントサイズ・行間）【Medium】
+- Phase 39: 変更ファイルパス検索【Medium】
+- Phase 21: ブランチ間比較【Large】
+- Phase 23: 構文ハイライト【Large】

@@ -51,5 +51,11 @@ struct ChangedFilesList: View {
         .onTapGesture {
             appViewModel.detailVM?.selectFile(file)
         }
+        .contextMenu {
+            Button("パスをコピー") {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(file.newPath, forType: .string)
+            }
+        }
     }
 }
