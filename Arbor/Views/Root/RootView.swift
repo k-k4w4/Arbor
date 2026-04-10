@@ -16,8 +16,13 @@ struct RootView: View {
                     CommitListView()
                         .navigationSplitViewColumnWidth(min: 320, ideal: 500)
                 } detail: {
-                    DetailView()
-                        .navigationSplitViewColumnWidth(min: 280, ideal: 360)
+                    if appViewModel.isCompareMode {
+                        CompareView()
+                            .navigationSplitViewColumnWidth(min: 280, ideal: 360)
+                    } else {
+                        DetailView()
+                            .navigationSplitViewColumnWidth(min: 280, ideal: 360)
+                    }
                 }
                 .navigationSplitViewStyle(.balanced)
                 .dropDestination(for: URL.self) { urls, _ in

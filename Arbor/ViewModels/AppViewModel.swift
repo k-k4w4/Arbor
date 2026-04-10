@@ -9,6 +9,8 @@ final class AppViewModel {
     var sidebarVM: SidebarViewModel?
     var commitListVM: CommitListViewModel?
     var detailVM: DetailViewModel?
+    var compareVM: CompareViewModel?
+    var isCompareMode: Bool = false
     var errorMessage: String?
     let settings: AppSettings
 
@@ -79,10 +81,13 @@ final class AppViewModel {
         sidebarVM?.cancelAll()
         commitListVM?.cancelAll()
         detailVM?.cancelAll()
+        compareVM?.cancelAll()
         selectedRepository = nil
         sidebarVM = nil
         commitListVM = nil
         detailVM = nil
+        compareVM = nil
+        isCompareMode = false
         gitService = nil
         if let first = repositories.first {
             selectRepository(first)
@@ -104,6 +109,7 @@ final class AppViewModel {
         sidebarVM?.cancelAll()
         commitListVM?.cancelAll()
         detailVM?.cancelAll()
+        compareVM?.cancelAll()
         selectedRepository = repo
         gitService = service
         UserDefaults.standard.set(repo.id.uuidString, forKey: "lastSelectedRepositoryID")
@@ -115,6 +121,8 @@ final class AppViewModel {
         }
         commitListVM = CommitListViewModel()
         detailVM = DetailViewModel()
+        compareVM = CompareViewModel()
+        isCompareMode = false
         sidebar.scheduleLoad(service: service)
     }
 
@@ -124,5 +132,9 @@ final class AppViewModel {
             commitList.loadInitial(ref: ref.gitRef, service: service)
         }
         sidebar.scheduleLoad(service: service)
+        if isCompareMode, let cvm = compareVM,
+           let base = cvm.baseRef, let target = cvm.targetRef {
+            cvm.load(baseRef: base, targetRef: target, service: service)
+        }
     }
 }

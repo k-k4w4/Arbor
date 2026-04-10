@@ -35,6 +35,16 @@ struct CommitListView: View {
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
+                        appViewModel.isCompareMode.toggle()
+                    } label: {
+                        Image(systemName: appViewModel.isCompareMode
+                              ? "arrow.triangle.branch"
+                              : "arrow.triangle.pull")
+                    }
+                    .help(appViewModel.isCompareMode ? "コミット表示に戻る" : "ブランチ比較")
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
                         settings.showAbsoluteDates.toggle()
                     } label: {
                         Image(systemName: settings.showAbsoluteDates ? "calendar" : "clock")

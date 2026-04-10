@@ -1,7 +1,7 @@
 import SwiftUI
 import AppKit
 
-private struct DiffCopyButton: View {
+struct DiffCopyButton: View {
     let rawDiff: String
     @State private var copied = false
     @State private var isHovered = false
@@ -32,7 +32,7 @@ private struct DiffCopyButton: View {
     }
 }
 
-private struct SplitDiffToggleButton: View {
+struct SplitDiffToggleButton: View {
     @Environment(AppSettings.self) private var settings
     @State private var isHovered = false
 

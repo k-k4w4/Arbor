@@ -59,6 +59,8 @@
 		F5D73E66408EC58C77E0DCF0 /* SectionToggleHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C3063A600B70B1C6D0E632B /* SectionToggleHeader.swift */; };
 		F68D1C4BFC5FA7BB272C35D1 /* DiffFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C3B2337DD0D5B60320AC1 /* DiffFile.swift */; };
 		F8FEFD61DC011A3D8386E3E7 /* CommitListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D99D9BD3D8279517DEC95D17 /* CommitListView.swift */; };
+		AA11BB22CC33DD44EE55FF01 /* CompareViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF02 /* CompareViewModel.swift */; };
+		AA11BB22CC33DD44EE55FF03 /* CompareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF04 /* CompareView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -127,6 +129,8 @@
 		EE450171EE5BC945A9B899A8 /* ChangedFilesList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangedFilesList.swift; sourceTree = "<group>"; };
 		F389EC5146F930F4B3C42A1B /* GitDiffParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitDiffParserTests.swift; sourceTree = "<group>"; };
 		FD0C3B2337DD0D5B60320AC1 /* DiffFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiffFile.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF02 /* CompareViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompareViewModel.swift; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE55FF04 /* CompareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompareView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -159,6 +163,7 @@
 			children = (
 				D149DE0F9C58C7383EB0C573 /* AppViewModel.swift */,
 				6908484833F605F5DC5A237F /* CommitListViewModel.swift */,
+				AA11BB22CC33DD44EE55FF02 /* CompareViewModel.swift */,
 				6C459F008B0E954FE3DFFB1F /* DetailViewModel.swift */,
 				70F61F5DCDC19C4CE409F40B /* SidebarViewModel.swift */,
 			);
@@ -273,6 +278,7 @@
 				B8EA69E7DADC71C013C92973 /* BinaryPreviewView.swift */,
 				EE450171EE5BC945A9B899A8 /* ChangedFilesList.swift */,
 				201D4700A30B97F54CA67D27 /* CommitInfoHeader.swift */,
+				AA11BB22CC33DD44EE55FF04 /* CompareView.swift */,
 				6B661FB0BE890337EF522F7B /* DetailView.swift */,
 				2786C49D88760974A79A80DD /* FileStatusBadge.swift */,
 				B133D23E9FF0D17729D065F3 /* FileTreeView.swift */,
@@ -424,6 +430,8 @@
 				6E8C2E3D89FAB26F64F45AD9 /* CommitInfoHeader.swift in Sources */,
 				F8FEFD61DC011A3D8386E3E7 /* CommitListView.swift in Sources */,
 				8818C572227CEEC110BA51ED /* CommitListViewModel.swift in Sources */,
+				AA11BB22CC33DD44EE55FF01 /* CompareViewModel.swift in Sources */,
+				AA11BB22CC33DD44EE55FF03 /* CompareView.swift in Sources */,
 				43E750B72C3B2A9DDE924022 /* CommitRow.swift in Sources */,
 				C840710A977A0068FF023C3E /* Data+Arbor.swift in Sources */,
 				29CA3EAD2F0E60CC74A2191A /* Date+RelativeFormat.swift in Sources */,

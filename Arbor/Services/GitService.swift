@@ -465,6 +465,38 @@ actor GitService {
         ])
     }
 
+    // MARK: - Branch comparison
+
+    func fetchDiffBetweenRefs(baseRef: String, targetRef: String) async throws -> Data {
+        try validateRef(baseRef)
+        try validateRef(targetRef)
+        return try await runCore([
+            "diff", "\(baseRef)...\(targetRef)",
+            "--no-ext-diff", "--no-textconv",
+            "--name-status", "-z"
+        ], maxOutputBytes: 5_242_880)
+    }
+
+    func fetchDiffContentBetweenRefs(baseRef: String, targetRef: String, rawPath: Data) async throws -> String {
+        try validateRef(baseRef)
+        try validateRef(targetRef)
+        let pathStr = try validateBlobPath(rawPath)
+        let data = try await runCore([
+            "diff", "\(baseRef)...\(targetRef)",
+            "--no-ext-diff", "--no-textconv",
+            "--", pathStr
+        ], maxOutputBytes: 5_000_000)
+        return data.utf8OrLatin1
+    }
+
+    func fetchDiffStatBetweenRefs(baseRef: String, targetRef: String) async throws -> String {
+        try validateRef(baseRef)
+        try validateRef(targetRef)
+        return try await run([
+            "diff", "\(baseRef)...\(targetRef)", "--stat"
+        ], maxOutputBytes: 1_048_576)
+    }
+
     // Returns the log entry for a single commit by SHA (full or abbreviated).
     // Uses the same format as fetchLog so GitLogParser.parse can consume it.
     func fetchCommitBySHA(_ sha: String) async throws -> String {

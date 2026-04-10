@@ -30,12 +30,12 @@ Arbor/
 ├── App/           ArborApp.swift, AppCommands.swift
 ├── Models/        Repository, Commit, GitRef(Branch.swift), CommitGraph, DiffFile, DiffHunk
 ├── Services/      GitService(actor), GitLogParser, GitDiffParser, GraphLayoutEngine, RepositoryStore
-├── ViewModels/    AppViewModel, SidebarViewModel, CommitListViewModel, DetailViewModel
+├── ViewModels/    AppViewModel, SidebarViewModel, CommitListViewModel, DetailViewModel, CompareViewModel
 ├── Views/
 │   ├── Root/      RootView(NavigationSplitView 3ペイン), WelcomeView
 │   ├── Sidebar/   SidebarView, RepositoryListSection, BranchListSection, etc.
 │   ├── CommitList/ CommitListView, CommitRow, CommitGraphView, RefBadge
-│   ├── Detail/    DetailView, CommitInfoHeader, ChangedFilesList, UnifiedDiffView, etc.
+│   ├── Detail/    DetailView, CompareView, CommitInfoHeader, ChangedFilesList, UnifiedDiffView, etc.
 │   └── Shared/    EmptyStateView, LoadingView
 ├── Extensions/    Color+Arbor.swift, Date+RelativeFormat.swift, String+SHA.swift
 └── Resources/     Assets.xcassets, Arbor.entitlements
@@ -142,6 +142,13 @@ Arbor/
 - **Phase 36 完了**: Gravatar ON/OFF
   - `AppSettings.showGravatar` トグル（Preferences「一般」セクション）
   - OFF時は CommitInfoHeader でアバター非表示
+- **Phase 21 完了**: ブランチ間比較
+  - ツールバーの比較ボタンで比較モードに切り替え
+  - 2つの ref（ブランチ/タグ）をピッカーで選択、入れ替えボタン付き
+  - `git diff base...target --name-status -z` でファイル一覧、`--stat` で変更統計
+  - ファイル選択で unified/split diff 表示（既存コンポーネント再利用）
+  - CompareViewModel + CompareView 新設、AppViewModel に `isCompareMode` 追加
+  - ⌘R リフレッシュが比較モードにも対応
 - **Phase 39 完了**: 変更ファイルパス検索
   - 検索バーに「メッセージ」/「パス」スコープ切り替え追加（`.searchScopes`）
   - パスモード時は `git log -- <path>` で検索（グロブパターン対応、例: `*.swift`）
@@ -171,5 +178,5 @@ Arbor/
 - Phase 12: サイドバーブランチ/タグページング【Medium ✅】
 - Phase 37: diff 表示設定（タブ幅・フォントサイズ・行間）【Medium ✅】
 - Phase 39: 変更ファイルパス検索【Medium ✅】
-- Phase 21: ブランチ間比較【Large】
+- Phase 21: ブランチ間比較【Large ✅】
 - Phase 23: 構文ハイライト【Large】
