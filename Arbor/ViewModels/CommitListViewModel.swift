@@ -1,6 +1,11 @@
 import Foundation
 import Observation
 
+enum SearchMode: Int, CaseIterable {
+    case message
+    case filePath
+}
+
 @MainActor
 @Observable
 final class CommitListViewModel {
@@ -8,6 +13,7 @@ final class CommitListViewModel {
     var filteredCommits: [Commit] = []
     var selectedCommit: Commit?
     var searchQuery: String = ""
+    var searchMode: SearchMode = .message
     var isLoading: Bool = false
     var hasMore: Bool = true
     var errorMessage: String?
@@ -50,6 +56,7 @@ final class CommitListViewModel {
         currentRef = ref
         gitService = service
         searchQuery = ""
+        searchMode = .message
         workingTreeGeneration += 1
         let wtGen = workingTreeGeneration
         loadTask = Task { [weak self] in await self?.fetchPage(generation: loadingGen) }
@@ -64,6 +71,11 @@ final class CommitListViewModel {
         errorMessage = nil
         isLoading = true
         loadTask = Task { [weak self] in await self?.fetchPage(generation: loadingGen) }
+    }
+
+    func searchModeChanged() {
+        guard !searchQuery.isEmpty, !looksLikeSHA(searchQuery) else { return }
+        searchQueryChanged(searchQuery)
     }
 
     // Called from view's onChange(of: searchQuery) — fires only on actual value changes,
@@ -264,6 +276,7 @@ final class CommitListViewModel {
 
     private func performGlobalSearch(query: String, generation: Int) async {
         guard let service = gitService, !query.isEmpty else { return }
+        let mode = searchMode
         defer {
             if loadingGeneration == generation, isLoading {
                 isLoading = false
@@ -272,36 +285,34 @@ final class CommitListViewModel {
         // Capture ref so a branch switch after the await doesn't mix results.
         let ref = currentRef
         do {
-            // Search commit messages (--grep covers subject + body) and author name/email concurrently.
-            // Author search errors are non-fatal: isolate so a regex-incompatible query doesn't
-            // discard the grep results.
-            async let grepTask = service.fetchLogSearch(ref: ref, grep: query)
-            async let authorTask = service.fetchLogSearchByAuthor(ref: ref, author: query)
-
-            // Both tasks handle CancellationError with early return; async let bindings
-            // are automatically cancelled when the enclosing scope exits.
-            let grep: String
-            do {
-                grep = try await grepTask
-            } catch is CancellationError {
-                return
+            let results: [Commit]
+            if mode == .filePath {
+                let output = try await service.fetchLogSearchByPath(ref: ref, path: query)
+                guard !Task.isCancelled, searchQuery == query, currentRef == ref else { return }
+                results = await parseSearchResults(output)
+            } else {
+                // Search commit messages (--grep covers subject + body) and author name/email concurrently.
+                async let grepTask = service.fetchLogSearch(ref: ref, grep: query)
+                async let authorTask = service.fetchLogSearchByAuthor(ref: ref, author: query)
+                let grep: String
+                do {
+                    grep = try await grepTask
+                } catch is CancellationError {
+                    return
+                }
+                let author: String
+                do {
+                    author = try await authorTask
+                } catch is CancellationError {
+                    return
+                } catch {
+                    author = ""
+                }
+                results = await mergeSearchResults(grep: grep, author: author)
             }
-            // Non-cancellation errors from grepTask propagate to the outer catch.
-            let author: String
-            do {
-                author = try await authorTask
-            } catch is CancellationError {
-                return
-            } catch {
-                author = ""
-            }
 
-            // Parse and merge on a background thread (nonisolated child task inherits cancellation).
-            let merged = await mergeSearchResults(grep: grep, author: author)
-
-            // Discard if a newer search has taken over or the ref changed.
             guard searchQuery == query, currentRef == ref else { return }
-            filteredCommits = merged
+            filteredCommits = results
             let stillPresent = selectedCommit.map { c in filteredCommits.contains { $0.id == c.id } } ?? false
             if !stillPresent {
                 selectedCommit = filteredCommits.first
@@ -332,6 +343,11 @@ final class CommitListViewModel {
         // Use commits.count as the record count. Git output is always well-formed and
         // malformed records (which would make counts diverge) don't occur in practice.
         return (commits, commits.count)
+    }
+
+    private nonisolated func parseSearchResults(_ output: String) async -> [Commit] {
+        guard !Task.isCancelled else { return [] }
+        return GitLogParser.parse(output)
     }
 
     private nonisolated func mergeSearchResults(grep: String, author: String) async -> [Commit] {

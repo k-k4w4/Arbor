@@ -12,6 +12,35 @@ struct PreferencesView: View {
                 Toggle("Split diff 表示する", isOn: $settings.showSplitDiff)
                 Toggle("Gravatar アバターを表示する", isOn: $settings.showGravatar)
             }
+            Section("Diff") {
+                HStack {
+                    Text("タブ幅")
+                    Spacer()
+                    TextField("", value: $settings.diffTabWidth, format: .number)
+                        .frame(width: 60)
+                        .multilineTextAlignment(.trailing)
+                    Text("スペース")
+                        .foregroundStyle(.secondary)
+                }
+                HStack {
+                    Text("フォントサイズ")
+                    Spacer()
+                    TextField("", value: $settings.diffFontSize, format: .number)
+                        .frame(width: 60)
+                        .multilineTextAlignment(.trailing)
+                    Text("pt")
+                        .foregroundStyle(.secondary)
+                }
+                HStack {
+                    Text("行間")
+                    Spacer()
+                    TextField("", value: $settings.diffLineSpacing, format: .number)
+                        .frame(width: 60)
+                        .multilineTextAlignment(.trailing)
+                    Text("pt")
+                        .foregroundStyle(.secondary)
+                }
+            }
             Section("外観") {
                 Picker("テーマ", selection: $settings.appearanceMode) {
                     Text("システムに従う").tag(0)

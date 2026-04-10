@@ -109,10 +109,17 @@ struct CommitListView: View {
         }
         .searchable(
             text: Binding(get: { vm.searchQuery }, set: { vm.searchQuery = $0 }),
-            prompt: "コミットを検索"
+            prompt: vm.searchMode == .filePath ? "ファイルパスで検索" : "コミットを検索"
         )
+        .searchScopes(Binding(get: { vm.searchMode }, set: { vm.searchMode = $0 })) {
+            Text("メッセージ").tag(SearchMode.message)
+            Text("パス").tag(SearchMode.filePath)
+        }
         .onChange(of: vm.searchQuery) { _, newValue in
             vm.searchQueryChanged(newValue)
+        }
+        .onChange(of: vm.searchMode) { _, newValue in
+            vm.searchModeChanged()
         }
     }
 }

@@ -67,7 +67,8 @@ actor GitService {
         _ arguments: [String],
         stdinData: Data? = nil,
         maxOutputBytes: Int? = nil,
-        timeout: TimeInterval? = nil
+        timeout: TimeInterval? = nil,
+        extraEnv: [String: String]? = nil
     ) async throws -> Data {
         // Avoid spawning a subprocess when the calling task is already cancelled.
         try Task.checkCancellation()
@@ -83,6 +84,7 @@ actor GitService {
         // fetchDiffContent which passes file paths as literal pathspecs. Commands that take no
         // pathspecs (for-each-ref, stash list, rev-parse) are unaffected by this flag.
         env["GIT_LITERAL_PATHSPECS"] = "1"
+        if let extraEnv { env.merge(extraEnv) { _, new in new } }
         process.environment = env
 
         let stdoutPipe = Pipe()
@@ -246,8 +248,8 @@ actor GitService {
     }
 
     // Returns git output as a String (UTF-8, falling back to Latin-1).
-    func run(_ arguments: [String], stdinData: Data? = nil, maxOutputBytes: Int? = nil) async throws -> String {
-        let data = try await runCore(arguments, stdinData: stdinData, maxOutputBytes: maxOutputBytes)
+    func run(_ arguments: [String], stdinData: Data? = nil, maxOutputBytes: Int? = nil, extraEnv: [String: String]? = nil) async throws -> String {
+        let data = try await runCore(arguments, stdinData: stdinData, maxOutputBytes: maxOutputBytes, extraEnv: extraEnv)
         return data.utf8OrLatin1
     }
 
@@ -445,6 +447,22 @@ actor GitService {
             "-n", "\(limit)",
             "--"
         ], maxOutputBytes: 20_971_520)
+    }
+
+    func fetchLogSearchByPath(ref: String, path: String, limit: Int = 500) async throws -> String {
+        try validateRef(ref)
+        let format = "%H%x00%P%x00%an%x00%ae%x00%ai%x00%cn%x00%ce%x00%ci%x00%s%x00%D%x00%x1E"
+        // Override GIT_LITERAL_PATHSPECS so glob patterns (e.g. *.swift) work as expected.
+        return try await run([
+            "log", ref,
+            "--format=\(format)",
+            "--decorate=full",
+            "-n", "\(limit)",
+            "--", path
+        ], maxOutputBytes: 20_971_520, extraEnv: [
+            "GIT_LITERAL_PATHSPECS": "0",
+            "GIT_GLOB_PATHSPECS": "1"
+        ])
     }
 
     // Returns the log entry for a single commit by SHA (full or abbreviated).

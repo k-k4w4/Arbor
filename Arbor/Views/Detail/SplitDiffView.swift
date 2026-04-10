@@ -40,6 +40,7 @@ private func buildSplitRows(hunkID: String, for hunk: DiffHunk) -> [SplitDiffRow
 
 struct SplitDiffView: View {
     let hunks: [DiffHunk]
+    @Environment(AppSettings.self) private var settings
     private let hunkRows: [(DiffHunk, [SplitDiffRow])]
 
     init(hunks: [DiffHunk]) {
@@ -56,7 +57,7 @@ struct SplitDiffView: View {
                 }
             }
         }
-        .font(.system(size: 11, design: .monospaced))
+        .font(.system(size: settings.diffFontSize, design: .monospaced))
     }
 
     @ViewBuilder
@@ -84,7 +85,7 @@ struct SplitDiffView: View {
             Divider()
             sideCell(line: row.right, isLeft: false)
         }
-        .padding(.vertical, 1)
+        .padding(.vertical, settings.diffLineSpacing)
     }
 
     @ViewBuilder
@@ -102,7 +103,7 @@ struct SplitDiffView: View {
                     Text(linePrefix(line.type))
                         .frame(width: 14, alignment: .center)
                         .foregroundStyle(prefixColor(line.type))
-                    Text(line.content)
+                    Text(expandTabs(line.content))
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             } else {
@@ -141,6 +142,10 @@ struct SplitDiffView: View {
         case .deleted: return .arborDeleted
         default:       return .secondary
         }
+    }
+
+    private func expandTabs(_ text: String) -> String {
+        text.replacingOccurrences(of: "\t", with: String(repeating: " ", count: settings.diffTabWidth))
     }
 
     private func backgroundFor(line: DiffLine?) -> Color {

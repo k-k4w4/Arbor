@@ -38,6 +38,27 @@ final class AppSettings {
     var showGravatar: Bool {
         didSet { UserDefaults.standard.set(showGravatar, forKey: "showGravatar") }
     }
+    var diffTabWidth: Int {
+        didSet {
+            let clamped = max(1, min(diffTabWidth, 16))
+            if clamped != diffTabWidth { diffTabWidth = clamped; return }
+            UserDefaults.standard.set(diffTabWidth, forKey: "diffTabWidth")
+        }
+    }
+    var diffFontSize: Double {
+        didSet {
+            let clamped = max(8, min(diffFontSize, 24))
+            if clamped != diffFontSize { diffFontSize = clamped; return }
+            UserDefaults.standard.set(diffFontSize, forKey: "diffFontSize")
+        }
+    }
+    var diffLineSpacing: Double {
+        didSet {
+            let clamped = max(0, min(diffLineSpacing, 8))
+            if clamped != diffLineSpacing { diffLineSpacing = clamped; return }
+            UserDefaults.standard.set(diffLineSpacing, forKey: "diffLineSpacing")
+        }
+    }
     var graphLaneWidth: Double {
         didSet {
             let clamped = max(6, min(graphLaneWidth, 40))
@@ -72,6 +93,15 @@ final class AppSettings {
         showGravatar = UserDefaults.standard.object(forKey: "showGravatar") == nil
             ? true
             : UserDefaults.standard.bool(forKey: "showGravatar")
+        diffTabWidth = UserDefaults.standard.object(forKey: "diffTabWidth") != nil
+            ? max(1, min(UserDefaults.standard.integer(forKey: "diffTabWidth"), 16))
+            : 4
+        diffFontSize = UserDefaults.standard.object(forKey: "diffFontSize") != nil
+            ? max(8, min(UserDefaults.standard.double(forKey: "diffFontSize"), 24))
+            : 11
+        diffLineSpacing = UserDefaults.standard.object(forKey: "diffLineSpacing") != nil
+            ? max(0, min(UserDefaults.standard.double(forKey: "diffLineSpacing"), 8))
+            : 1
         let storedLaneWidth = UserDefaults.standard.double(forKey: "graphLaneWidth")
         graphLaneWidth = max(6, min(storedLaneWidth > 0 ? storedLaneWidth : 14, 40))
         useCustomGitPath = UserDefaults.standard.bool(forKey: "useCustomGitPath")

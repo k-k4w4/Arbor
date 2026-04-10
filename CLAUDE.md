@@ -142,6 +142,16 @@ Arbor/
 - **Phase 36 完了**: Gravatar ON/OFF
   - `AppSettings.showGravatar` トグル（Preferences「一般」セクション）
   - OFF時は CommitInfoHeader でアバター非表示
+- **Phase 39 完了**: 変更ファイルパス検索
+  - 検索バーに「メッセージ」/「パス」スコープ切り替え追加（`.searchScopes`）
+  - パスモード時は `git log -- <path>` で検索（グロブパターン対応、例: `*.swift`）
+  - `CommitListViewModel.searchMode` で検索モードを管理
+  - リポジトリ/ブランチ切り替え時にモードをリセット
+- **Phase 37 完了**: diff 表示設定
+  - `AppSettings.diffTabWidth`（1〜16、デフォルト4）— diff 表示時にタブをスペースに展開
+  - `AppSettings.diffFontSize`（8〜24pt、デフォルト11）— UnifiedDiffView / SplitDiffView のフォントサイズ
+  - `AppSettings.diffLineSpacing`（0〜8pt、デフォルト1）— diff 行の縦パディング
+  - Preferences「Diff」セクション新設
 - **Phase 38 完了**: グラフ幅・Git パス指定
   - `AppSettings.graphLaneWidth`（6〜40pt、デフォルト14）→ CommitGraphView に反映
   - `AppSettings.customGitPath`（空=自動検出）→ GitService 生成時に使用
@@ -158,8 +168,8 @@ Arbor/
 ## 将来拡張（ロードマップ）
 
 詳細は memory の `project_roadmap.md` を参照。概要：
-- Phase 12: サイドバーブランチ/タグページング【Medium】
-- Phase 37: diff 表示設定（タブ幅・フォントサイズ・行間）【Medium】
-- Phase 39: 変更ファイルパス検索【Medium】
+- Phase 12: サイドバーブランチ/タグページング【Medium ✅】
+- Phase 37: diff 表示設定（タブ幅・フォントサイズ・行間）【Medium ✅】
+- Phase 39: 変更ファイルパス検索【Medium ✅】
 - Phase 21: ブランチ間比較【Large】
 - Phase 23: 構文ハイライト【Large】

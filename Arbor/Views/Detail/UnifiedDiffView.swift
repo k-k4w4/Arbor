@@ -2,6 +2,7 @@ import SwiftUI
 
 struct UnifiedDiffView: View {
     let hunks: [DiffHunk]
+    @Environment(AppSettings.self) private var settings
 
     var body: some View {
         LazyVStack(spacing: 0) {
@@ -12,7 +13,7 @@ struct UnifiedDiffView: View {
                 }
             }
         }
-        .font(.system(size: 11, design: .monospaced))
+        .font(.system(size: settings.diffFontSize, design: .monospaced))
     }
 
     @ViewBuilder
@@ -33,7 +34,7 @@ struct UnifiedDiffView: View {
                 .italic()
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 8)
-                .padding(.vertical, 1)
+                .padding(.vertical, settings.diffLineSpacing)
         } else {
             HStack(spacing: 0) {
                 lineNumberCell(line.oldLineNumber)
@@ -41,10 +42,10 @@ struct UnifiedDiffView: View {
                 Text(linePrefix(line.type))
                     .frame(width: 14, alignment: .center)
                     .foregroundStyle(prefixColor(line.type))
-                Text(line.content)
+                Text(expandTabs(line.content))
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(.vertical, 1)
+            .padding(.vertical, settings.diffLineSpacing)
             .background(lineBackground(line.type))
             .accessibilityLabel(diffLineAccessibilityLabel(line))
         }
@@ -85,6 +86,10 @@ struct UnifiedDiffView: View {
         case .deleted: return .arborDeleted
         default: return .secondary
         }
+    }
+
+    private func expandTabs(_ text: String) -> String {
+        text.replacingOccurrences(of: "\t", with: String(repeating: " ", count: settings.diffTabWidth))
     }
 
     private func lineBackground(_ type: DiffLineType) -> Color {
