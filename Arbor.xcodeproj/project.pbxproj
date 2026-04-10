@@ -61,6 +61,8 @@
 		F8FEFD61DC011A3D8386E3E7 /* CommitListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D99D9BD3D8279517DEC95D17 /* CommitListView.swift */; };
 		AA11BB22CC33DD44EE55FF01 /* CompareViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF02 /* CompareViewModel.swift */; };
 		AA11BB22CC33DD44EE55FF03 /* CompareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE55FF04 /* CompareView.swift */; };
+		AABB000000000010 /* SyntaxHighlightService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB000000000011 /* SyntaxHighlightService.swift */; };
+		AABB000000000012 /* HighlightedText.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB000000000013 /* HighlightedText.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -131,7 +133,19 @@
 		FD0C3B2337DD0D5B60320AC1 /* DiffFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiffFile.swift; sourceTree = "<group>"; };
 		AA11BB22CC33DD44EE55FF02 /* CompareViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompareViewModel.swift; sourceTree = "<group>"; };
 		AA11BB22CC33DD44EE55FF04 /* CompareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompareView.swift; sourceTree = "<group>"; };
+		AABB000000000011 /* SyntaxHighlightService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyntaxHighlightService.swift; sourceTree = "<group>"; };
+		AABB000000000013 /* HighlightedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightedText.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AABB000000000020 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		0F98DCCE9B059B27AD643DB3 /* ArborTests */ = {
@@ -196,6 +210,7 @@
 			children = (
 				3E21E7884FA34E8DD0070C62 /* EmptyStateView.swift */,
 				6465C29B86F9E7116ACB09B6 /* GravatarView.swift */,
+				AABB000000000013 /* HighlightedText.swift */,
 				96DDCCB14BD695BE5F038C45 /* LoadingView.swift */,
 			);
 			path = Shared;
@@ -250,6 +265,7 @@
 				671C020DD24BC2B9B782FEC4 /* GraphLayoutEngine.swift */,
 				38371621FE274B107D70962E /* GravatarCache.swift */,
 				AF7074ABDB6615178C3A4EEC /* RepositoryStore.swift */,
+				AABB000000000011 /* SyntaxHighlightService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -343,6 +359,7 @@
 			buildConfigurationList = 60E017BFD2410CAAABF338E8 /* Build configuration list for PBXNativeTarget "Arbor" */;
 			buildPhases = (
 				C4195B3B1D0B70661C221418 /* Sources */,
+				AABB000000000020 /* Frameworks */,
 				FB702F201BCF85D4335215ED /* Resources */,
 			);
 			buildRules = (
@@ -351,6 +368,7 @@
 			);
 			name = Arbor;
 			packageProductDependencies = (
+				AABB000000000001 /* HighlightSwift */,
 			);
 			productName = Arbor;
 			productReference = CBAC62CC4DC9451138C0087B /* Arbor.app */;
@@ -380,6 +398,9 @@
 			productRefGroup = E229EC80D1677D4209FC0651 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
+			packageReferences = (
+				AABB000000000002 /* XCRemoteSwiftPackageReference "HighlightSwift" */,
+			);
 			targets = (
 				BB73B999AA50A2375EEB9171 /* Arbor */,
 				2922186A25D5210F67F7E079 /* ArborTests */,
@@ -447,6 +468,8 @@
 				967EB78EAF0DCC0CC91BD10F /* GitService.swift in Sources */,
 				98DCFE603CFFF7FA1C0BE0C2 /* GraphLayoutEngine.swift in Sources */,
 				B5D52E642D768B82BF212EB2 /* GravatarCache.swift in Sources */,
+				AABB000000000012 /* HighlightedText.swift in Sources */,
+				AABB000000000010 /* SyntaxHighlightService.swift in Sources */,
 				6090D008A3177652D09FC2B8 /* GravatarView.swift in Sources */,
 				474C9F2D4C7B4E3C491E00B6 /* LoadingView.swift in Sources */,
 				9C02951399CFDF00EDD0DA4A /* PreferencesView.swift in Sources */,
@@ -711,6 +734,25 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AABB000000000002 /* XCRemoteSwiftPackageReference "HighlightSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/appstefan/HighlightSwift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AABB000000000001 /* HighlightSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AABB000000000002 /* XCRemoteSwiftPackageReference "HighlightSwift" */;
+			productName = HighlightSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B419F7CE55E998980797F5AE /* Project object */;
 }

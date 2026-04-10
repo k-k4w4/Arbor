@@ -2,6 +2,7 @@ import SwiftUI
 
 struct UnifiedDiffView: View {
     let hunks: [DiffHunk]
+    var language: String? = nil
     @Environment(AppSettings.self) private var settings
 
     var body: some View {
@@ -42,7 +43,7 @@ struct UnifiedDiffView: View {
                 Text(linePrefix(line.type))
                     .frame(width: 14, alignment: .center)
                     .foregroundStyle(prefixColor(line.type))
-                Text(expandTabs(line.content))
+                HighlightedText(code: expandTabs(line.content), language: language)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.vertical, settings.diffLineSpacing)

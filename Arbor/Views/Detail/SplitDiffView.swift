@@ -40,11 +40,13 @@ private func buildSplitRows(hunkID: String, for hunk: DiffHunk) -> [SplitDiffRow
 
 struct SplitDiffView: View {
     let hunks: [DiffHunk]
+    var language: String? = nil
     @Environment(AppSettings.self) private var settings
     private let hunkRows: [(DiffHunk, [SplitDiffRow])]
 
-    init(hunks: [DiffHunk]) {
+    init(hunks: [DiffHunk], language: String? = nil) {
         self.hunks = hunks
+        self.language = language
         self.hunkRows = hunks.map { ($0, buildSplitRows(hunkID: $0.id, for: $0)) }
     }
 
@@ -103,7 +105,7 @@ struct SplitDiffView: View {
                     Text(linePrefix(line.type))
                         .frame(width: 14, alignment: .center)
                         .foregroundStyle(prefixColor(line.type))
-                    Text(expandTabs(line.content))
+                    HighlightedText(code: expandTabs(line.content), language: language)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             } else {

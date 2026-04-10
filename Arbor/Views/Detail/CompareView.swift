@@ -222,11 +222,12 @@ struct CompareView: View {
                     .background(.bar)
                     Divider()
                     ScrollView {
+                        let lang = vm.selectedFile.flatMap { SyntaxHighlightService.language(for: $0.newPath) }
                         if settings.showSplitDiff {
-                            SplitDiffView(hunks: vm.diffHunks)
+                            SplitDiffView(hunks: vm.diffHunks, language: lang)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         } else {
-                            UnifiedDiffView(hunks: vm.diffHunks)
+                            UnifiedDiffView(hunks: vm.diffHunks, language: lang)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }

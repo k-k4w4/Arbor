@@ -6,7 +6,8 @@ macOSネイティブの閲覧専用Gitビューアー。書き込み操作は一
 
 - Swift 5.9 / SwiftUI / macOS 14.0+
 - `@Observable` マクロ（strict concurrency は未適用）
-- Git操作: `Process` クラスで shell 呼び出し（依存ゼロ、libgit2 不使用）
+- Git操作: `Process` クラスで shell 呼び出し（libgit2 不使用）
+- 構文ハイライト: [HighlightSwift](https://github.com/appstefan/HighlightSwift) v1.1（highlight.js + JavaScriptCore）
 - サンドボックス: **無効**（entitlements で `app-sandbox = false`）
 - ビルド: `xcodebuild -scheme Arbor -configuration Debug build`
 
@@ -142,6 +143,13 @@ Arbor/
 - **Phase 36 完了**: Gravatar ON/OFF
   - `AppSettings.showGravatar` トグル（Preferences「一般」セクション）
   - OFF時は CommitInfoHeader でアバター非表示
+- **Phase 23 完了**: 構文ハイライト
+  - HighlightSwift（highlight.js + JavaScriptCore）による構文ハイライト
+  - 50+ 言語対応、ファイル拡張子から言語自動検出
+  - `SyntaxHighlightService` actor（LRUキャッシュ2000行）
+  - `HighlightedText` ビューで非同期ハイライト（プレーン表示→カラー表示）
+  - ダーク/ライトモード自動対応
+  - UnifiedDiffView / SplitDiffView 両方に適用
 - **Phase 21 完了**: ブランチ間比較
   - ツールバーの比較ボタンで比較モードに切り替え
   - 2つの ref（ブランチ/タグ）をピッカーで選択、入れ替えボタン付き
@@ -179,4 +187,4 @@ Arbor/
 - Phase 37: diff 表示設定（タブ幅・フォントサイズ・行間）【Medium ✅】
 - Phase 39: 変更ファイルパス検索【Medium ✅】
 - Phase 21: ブランチ間比較【Large ✅】
-- Phase 23: 構文ハイライト【Large】
+- Phase 23: 構文ハイライト【Large ✅】
