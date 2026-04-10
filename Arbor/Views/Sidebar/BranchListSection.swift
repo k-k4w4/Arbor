@@ -38,7 +38,7 @@ struct RemotesListSection: View {
                         ForEach(group.refs) { ref in
                             BranchCell(ref: ref)
                                 .tag(ref.id)
-                                .listRowInsets(EdgeInsets(top: 4, leading: 24, bottom: 4, trailing: 8))
+                                .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 8))
                                 .contextMenu {
                                     Button("名前をコピー") {
                                         NSPasteboard.general.clearContents()
@@ -110,6 +110,7 @@ struct BranchListSection: View {
                 ForEach(Array(refs.prefix(limit))) { ref in
                     BranchCell(ref: ref)
                         .tag(ref.id)
+                        .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 8))
                         .contextMenu {
                             Button("名前をコピー") {
                                 NSPasteboard.general.clearContents()
